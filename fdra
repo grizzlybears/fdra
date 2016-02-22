@@ -23,7 +23,11 @@ def handle_import( argv):
         return 1
 
     s = report_parser.parse_single_file( argv[0]  )
-    print "haha", s.T_day
+
+    if s is None:
+        return 1
+
+    s.dump()
 
     return 0
 
