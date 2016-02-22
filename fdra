@@ -11,15 +11,16 @@ import traceback
 import parser 
 from parser import report_parser
 
-def print_usage():
+def print_usage( argv0 = 'fdra'):
     print "Usage:"
-    print "  导入日报文件 -  %s import <日报文件>" % sys.argv[0]
+    print "  %s import <日报文件>   解析导入逐日盯市日报文件" % argv0
+    print "  %s stat                显示统计"         % argv0
 
 # 处理 'import' 子命令
 def handle_import( argv):
     i = len(argv)
     if ( i < 1 ):
-        print "  导入日报文件 -  %s import <日报文件>" % sys.argv[0]
+        print "  %s import <日报文件>     解析导入日报文件" % sys.argv[0]
         print "\n 未指定 <日报文件>\n"
         return 1
 
@@ -37,6 +38,11 @@ def handle_import( argv):
 
     return 0
 
+# 处理 'stat' 子命令
+def handle_stat():
+    print "not implemented yet."
+    return 0
+
 def main():
 
     i = len(sys.argv)
@@ -45,8 +51,14 @@ def main():
         return 1
 
     sub_command = sys.argv[1]
+
     if ('import' == sub_command ):
-        return handle_import ( sys.argv[2:] )
+        return handle_import ( sys.argv[2:] ) 
+    if ('stat' == sub_command ):
+        return handle_stat( )
+    elif ('help' == sub_command ):
+        print_usage()
+        return 1
     else:
         print "\n无效的‘子命令’ -- %s\n" % ( sub_command, )
         print_usage()
