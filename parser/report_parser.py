@@ -9,9 +9,9 @@ from xlrd import sheet
 DAILY_REPORT_SHEET_NAME = '客户交易结算日报'
 REPORT_TITLE =   "客户交易结算日报(逐日盯市)"
 
-# 期货成交汇总 的开始位置 -- '合约'格子
+# 期货成交汇总 的搜寻开始位置
 TRADE_RECORD_HEADER_COL = 0
-TRADE_RECORD_HEADER_ROW = 22
+TRADE_RECORD_HEADER_ROW = 20
 
 # 交易日 位置
 T_DAY_COL = 7
@@ -144,17 +144,12 @@ class SingleFileResult:
         for pos in self.aggregated_pos_arr:
             pos_profit = pos_profit + pos.profit 
 
-        ret = True
         if ( abs( fee - self.fee) > 0.0001 ):
-           print "！！ 当日手续费=%f,  成交手续费之和=%f" % ( self.fee, fee)
-           ret = False
+            raise Exception( "%s: 当日手续费=%f,  成交手续费之和=%f" % (self.T_day,  self.fee, fee))
 
         profit = flat_profit + pos_profit 
         if ( abs( profit - self.profit) > 0.0001 ):
-           print "！！ 当日盈亏=%f,  平盈亏之和=%f , 仓盈亏之和=%f" % ( self.profit , flat_profit, pos_profit)
-           ret = False
-
-        return ret 
+            raise Exception("%s: 当日盈亏=%f,  平盈亏之和=%f , 仓盈亏之和=%f" % ( self.T_day, self.profit , flat_profit, pos_profit))
 
     def dump(self):
         print "==== %s ===" % self.T_day
@@ -335,11 +330,19 @@ def parse_single_file(file_path ):
     result.balance = sh.cell_value( colx = 2, rowx = 16)
 
     # 准备处理 期货成交汇总
-    header_cv =  sh.cell_value(colx = TRADE_RECORD_HEADER_COL , rowx = TRADE_RECORD_HEADER_ROW)
-    if ('合约' !=  header_cv):
+    row_walker =  TRADE_RECORD_HEADER_ROW
+    found = False
+    while row_walker < sh.nrows:
+        header_cv =  sh.cell_value(colx = TRADE_RECORD_HEADER_COL , rowx = row_walker)
+        if ('期货成交汇总' ==  header_cv):
+            found = True
+            break
+        row_walker = row_walker +1
+
+    if not found:
         raise Exception ("%s 找不到'期货成交汇总'区域" % (file_path, ) )
     
-    row_walker = 1 + TRADE_RECORD_HEADER_ROW 
+    row_walker = 2 + row_walker 
     col0 = sh.cell_value (colx = TRADE_RECORD_HEADER_COL , rowx =  row_walker)
     while ( '合计' !=  col0):
         #print "processing row %d" % ( row_walker, )
@@ -371,8 +374,7 @@ def parse_single_file(file_path ):
         row_walker = row_walker + 1
         col0 = sh.cell_value (colx = POS_RECORD_HEADER_COL , rowx =  row_walker)
 
-    if ( not result.verify()):
-        return None
+    result.verify()
 
     return  result
     

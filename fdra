@@ -3,6 +3,7 @@
 import sys
 sys.setdefaultencoding("utf-8")
 import site
+import traceback
 
 # 工具入口
 
@@ -22,12 +23,17 @@ def handle_import( argv):
         print "\n 未指定 <日报文件>\n"
         return 1
 
-    s = report_parser.parse_single_file( argv[0]  )
+    try:
 
-    if s is None:
-        return 1
+        s = report_parser.parse_single_file( argv[0]  )
+    except  Exception as e:
+         (t, v, bt) = sys.exc_info()
+         #print e
+         traceback.print_exception(t, v, bt)
 
-    s.dump()
+         return 2
+
+    #s.dump()
 
     return 0
 
