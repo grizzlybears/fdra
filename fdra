@@ -4,10 +4,28 @@ import sys
 sys.setdefaultencoding("utf-8")
 import site
 
-import analyzer
+# 工具入口
+
+
+import parser 
+from parser import report_parser
 
 def print_usage():
-    print "Usage %s <日报文件>" % sys.argv[0]
+    print "Usage:"
+    print "  导入日报文件 -  %s import <日报文件>" % sys.argv[0]
+
+# 处理 'import' 子命令
+def handle_import( argv):
+    i = len(argv)
+    if ( i < 1 ):
+        print "  导入日报文件 -  %s import <日报文件>" % sys.argv[0]
+        print "\n 未指定 <日报文件>\n"
+        return 1
+
+    s = report_parser.parse_single_file( argv[0]  )
+    print "haha", s.T_day
+
+    return 0
 
 def main():
 
@@ -16,9 +34,13 @@ def main():
         print_usage()
         return 1
 
-    s = analyzer.parse_single_file( sys.argv[1]  )
-
-    print "haha", s.T_day
+    sub_command = sys.argv[1]
+    if ('import' == sub_command ):
+        return handle_import ( sys.argv[2:] )
+    else:
+        print "\n无效的‘子命令’ -- %s\n" % ( sub_command, )
+        print_usage()
+        return 1
 
     return 0
 
