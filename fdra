@@ -5,7 +5,7 @@ sys.setdefaultencoding("utf-8")
 import site
 import traceback
 
-# 工具入口
+import subprocess
 
 
 import parser 
@@ -14,17 +14,43 @@ from parser import report_parser
 import dao
 from   dao import db_operator
 
+MY_NAME='fdra'
 
-def print_usage( argv0 = 'fdra'):
+# 工具入口
+
+def print_usage( argv0 = MY_NAME ):
     print "Usage:"
-    print "  %s import <日报文件>   解析导入逐日盯市日报文件" % argv0
+    print "  %s import    <日报文件>   导入逐日盯市日报文件" % argv0
+    print "  %s importdir <日报目录>   导入指定目录下所有逐日盯市日报文件" % argv0
     print "  %s stat                显示统计"         % argv0
 
-# 处理 'import' 子命令
-def handle_import( argv):
+# 处理 'importdir' 子命令
+def handle_importdir( argv, argv0 = MY_NAME ):
     i = len(argv)
     if ( i < 1 ):
-        print "  %s import <日报文件>     解析导入日报文件" % sys.argv[0]
+        print "  %s importdir <日报目录>   导入指定目录下所有逐日盯市日报文件" % argv0
+        print "\n 未指定 <日报目录>\n"
+        return 1
+
+    myself = sys.argv[0]
+    r = subprocess.call([ "find"
+            , argv[0]
+            , "-name"
+            , "*.xls"
+            , "-exec"
+            , myself
+            , "import"
+            , "{}"
+            , ";"
+            ])
+    return r 
+
+
+# 处理 'import' 子命令
+def handle_import( argv, argv0 = MY_NAME ):
+    i = len(argv)
+    if ( i < 1 ):
+        print "  %s import <日报文件>     解析导入日报文件" % argv0
         print "\n 未指定 <日报文件>\n"
         return 1
 
@@ -61,7 +87,9 @@ def main():
 
     if ('import' == sub_command ):
         return handle_import ( sys.argv[2:] ) 
-    if ('stat' == sub_command ):
+    elif ('importdir' == sub_command ):
+        return handle_importdir ( sys.argv[2:] ) 
+    elif ('stat' == sub_command ):
         return handle_stat( )
     elif ('help' == sub_command ):
         print_usage()

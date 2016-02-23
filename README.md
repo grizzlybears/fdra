@@ -16,7 +16,9 @@ Future Daily Report Analyzer
 
 用法概要
 -------
->fdra import <日报文件>     解析导入逐日盯市日报文件
+>fdra import    <日报文件>   解析导入逐日盯市日报文件
+>
+>fdra importdir <日报目录>   导入指定目录下所有逐日盯市日报文件
 >
 >fdra stat                  显示统计
 >
