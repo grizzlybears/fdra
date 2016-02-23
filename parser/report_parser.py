@@ -228,6 +228,22 @@ class SingleFileResult:
             pos.save_to_db(cur, self.T_day, record_no )
             record_no = record_no + 1
 
+        sql = '''
+insert into DailyProfitByTraget(t_day,target, profit)
+select t_day, target, sum(s) from 
+(
+    select t_day, target, sum(profit) as s  from TradeAggreRecord r
+       where r.t_day = ?    and r.offset='平'
+       group by t_day, r.target
+    union
+    select t_day, target, sum(profit) as s from PositionAggreRecord r
+         where r.t_day = ?
+         group by t_day,r.target
+)
+group by t_day,target
+        '''
+            
+        conn.execute( sql, ( self.T_day, self.T_day ) )
 
 
 # 根据'合约'获得其'标的品种'

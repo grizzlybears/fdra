@@ -3,7 +3,7 @@ from datetime import date
 from datetime import datetime
 
 import sqlite3
-
+import subprocess
 
 DB_NAME='fdra.db'
 
@@ -62,17 +62,19 @@ def get_db_conn():
     sql = ''' CREATE TABLE IF NOT EXISTS DailyProfitByTraget (
        t_day     TEXT
        , target    TEXT
-       , volume    INTERGER
-       , flat_profit  NUMERIC
-       , pos_profit   NUMERIC
        , profit      NUMERIC    NULL
        , PRIMARY KEY(t_day, target)
        )
     '''
     conn.execute( sql)
 
-
     conn.commit()
 
-
     return conn 
+
+def simplest_stat_by_target():
+    sql = "select target,sum(profit) from DailyProfitByTraget group by target" 
+    cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
+    subprocess.call(cmd, shell=True)
+
+

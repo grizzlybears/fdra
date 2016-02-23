@@ -11,6 +11,10 @@ import traceback
 import parser 
 from parser import report_parser
 
+import dao
+from   dao import db_operator
+
+
 def print_usage( argv0 = 'fdra'):
     print "Usage:"
     print "  %s import <日报文件>   解析导入逐日盯市日报文件" % argv0
@@ -43,7 +47,7 @@ def handle_import( argv):
 
 # 处理 'stat' 子命令
 def handle_stat():
-    print "not implemented yet."
+    db_operator.simplest_stat_by_target()
     return 0
 
 def main():
