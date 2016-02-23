@@ -433,8 +433,7 @@ def parse_single_file(file_path ):
         col0 = sh.cell_value (colx = POS_RECORD_HEADER_COL , rowx =  row_walker)
 
     result.verify()
-
-    result.dump()
+    #result.dump()
 
     return  result
 

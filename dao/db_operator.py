@@ -10,6 +10,7 @@ DB_NAME='fdra.db'
  # 打开DB，并酌情建表，返回 sqlite3.Connection
 def get_db_conn():
     conn = sqlite3.connect( DB_NAME)
+    conn.text_factory = str
 
     sql = ''' CREATE TABLE IF NOT EXISTS DailyReport (
        t_day     TEXT
