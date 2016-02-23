@@ -6,6 +6,11 @@ import xlrd
 from xlrd import book
 from xlrd import sheet
 
+import sqlite3
+
+import dao
+from   dao import db_operator
+
 DAILY_REPORT_SHEET_NAME = '客户交易结算日报'
 REPORT_TITLE =   "客户交易结算日报(逐日盯市)"
 
@@ -62,6 +67,19 @@ class TradeAggreRecord:
                 , self.trade_fee 
                 )
 
+    def save_to_db(self, dbcur, t_day, record_no):
+        dbcur.execute( '''insert into  TradeAggreRecord(t_day,record_no
+                , contract, target, offset, b_or_s, volume, price
+                , profit, trade_fee ) 
+            values (?, ?
+                 , ?, ?, ?, ?, ?, ?
+                 , ?, ?)'''
+                , ( t_day , record_no
+                    , self.contract, self.target, self.offset, self.b_or_s , self.volume , self.price
+                    , self.profit , self.trade_fee 
+                  )
+                )
+
 
 #持仓汇总
 class PositionAggreRecord:
@@ -100,6 +118,21 @@ class PositionAggreRecord:
                 , self.today_settle_price
                 , self.profit 
                 )
+
+    def save_to_db(self, dbcur, t_day, record_no):
+        dbcur.execute( '''insert into  PositionAggreRecord(t_day,record_no
+                , contract, target, b_or_s, volume, avg_price
+                , prev_settle_price, today_settle_price, profit ) 
+            values (?, ?
+                 , ?, ?, ?, ?, ?
+                 , ?, ?, ?)'''
+                , ( t_day , record_no
+                    , self.contract, self.target, self.b_or_s , self.volume , self.avg_price
+                    , self.prev_settle_price , self.today_settle_price , self.profit 
+                  )
+                )
+
+
 
 # 单个日报文件的解析结果
 class SingleFileResult:
@@ -159,7 +192,7 @@ class SingleFileResult:
             tr.dump("    ")
 
         print "持仓汇总"
-        for pos in self.aggregated_tr_arr:
+        for pos in self.aggregated_pos_arr:
             pos.dump("    ")
         
         print "交易日 %s 上日结存=%f 盈亏=%f 手续费=%f 当日结存=%f" % (
@@ -169,6 +202,31 @@ class SingleFileResult:
                 , self.fee
                 , self.balance )
 
+    def save_to_db(self, conn):
+
+        cur = conn.cursor()
+
+        cur.execute( "select count(*) from DailyReport where t_day=?", (self.T_day, ) )
+        rownum = cur.fetchone()[0]
+
+        if ( rownum > 0):
+            print "%s already exsists in DB, pass." % ( self.T_day, )
+            return 
+
+        cur.execute( '''insert into DailyReport(t_day, profit, fee, balance, prev_balance ) 
+                values (?, ?, ?, ?, ?)'''
+                , (self.T_day , self.profit , self.fee, self.balance, self.prev_balance)
+                )
+
+        record_no = 0
+        for tr in self.aggregated_tr_arr:
+            tr.save_to_db(cur, self.T_day, record_no )
+            record_no = record_no + 1
+        
+        record_no = 0
+        for pos in self.aggregated_pos_arr:
+            pos.save_to_db(cur, self.T_day, record_no )
+            record_no = record_no + 1
 
 
 
@@ -376,5 +434,16 @@ def parse_single_file(file_path ):
 
     result.verify()
 
+    result.dump()
+
     return  result
-    
+
+# save a 'SingleFileResult' to sqlite db
+def save_report_to_db( parse_result ):
+    conn = db_operator.get_db_conn()
+
+    parse_result.save_to_db( conn)
+
+    conn.commit()
+
+

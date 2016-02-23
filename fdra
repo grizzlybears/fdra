@@ -27,6 +27,9 @@ def handle_import( argv):
     try:
 
         s = report_parser.parse_single_file( argv[0]  )
+
+        report_parser.save_report_to_db(s)
+
     except  Exception as e:
          (t, v, bt) = sys.exc_info()
          #print e
