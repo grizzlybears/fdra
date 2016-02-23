@@ -228,9 +228,11 @@ class SingleFileResult:
             pos.save_to_db(cur, self.T_day, record_no )
             record_no = record_no + 1
 
+        conn.execute( "drop table if exists temp.profit_stat")
+        
         sql = '''
-insert into DailyProfitByTraget(t_day,target, profit)
-select t_day, target, sum(s) from 
+create table temp.profit_stat as 
+select t_day, target, sum(s) as profit from 
 (
     select t_day, target, sum(profit) as s  from TradeAggreRecord r
        where r.t_day = ?    and r.offset='平'
@@ -245,6 +247,22 @@ group by t_day,target
             
         conn.execute( sql, ( self.T_day, self.T_day ) )
 
+        sql = '''
+insert into DailyProfitByTraget(t_day,target, profit,fee)
+select t.t_day, t.target,t.profit, f.fee
+from temp.profit_stat t 
+left join (
+  select t_day, target, sum(trade_fee) as fee
+  from  TradeAggreRecord
+  where t_day= ? 
+  group by t_day, target ) f
+on (t.t_day = f.t_day and t.target = f.target )
+        '''
+        conn.execute( sql, ( self.T_day, ) )
+        
+        conn.execute( "drop table temp.profit_stat")
+        
+        #####end of 'save_to_db' !
 
 # 根据'合约'获得其'标的品种'
 # 失败则返回 None

@@ -61,8 +61,9 @@ def get_db_conn():
     # 冗余表， 每日按品种的盈亏统计
     sql = ''' CREATE TABLE IF NOT EXISTS DailyProfitByTraget (
        t_day     TEXT
-       , target    TEXT
-       , profit      NUMERIC    NULL
+       , target  TEXT
+       , profit  NUMERIC    NULL
+       , fee     NUMERIC    NULL
        , PRIMARY KEY(t_day, target)
        )
     '''
@@ -73,7 +74,7 @@ def get_db_conn():
     return conn 
 
 def simplest_stat_by_target():
-    sql = "select target,sum(profit) from DailyProfitByTraget group by target" 
+    sql = "select target,sum(profit), sum(fee) from DailyProfitByTraget group by target" 
     cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
     subprocess.call(cmd, shell=True)
 
