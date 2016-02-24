@@ -1,36 +1,12 @@
 1. 按品种的净利统计
 
-select target, sum(profit) - sum(fee) 
+select target, sum(profit), sum(fee), sum(profit) - sum(fee) , sum(volume)
 from DailyProfitByTraget
 group by target
-order by target
+order by 2 desc
 
 2. 总计
-select sum(profit) , sum(fee) , sum(profit) - sum(fee)
+select sum(profit) , sum(fee) , sum(profit) - sum(fee) , sum(volume)
 from DailyProfitByTraget
 
-3. 带上成交量的每日盈亏统计
-select f.t_day, f.target, f.profit , f.fee , v.vol
-from DailyProfitByTraget f
-left join 
-(
-    select t_day, target, sum(volume) as vol
-    from TradeAggreRecord
-    group by t_day,target
-) v
-on (f.t_day = v. t_day and f.target = v.target)
-order by   f.target, f.t_day
-
-4. 带上成交量的按品种盈亏统计
-select f.target, sum(f.profit) - sum(f.fee) , sum(v.vol)
-from DailyProfitByTraget f
-left join 
-(
-    select t_day, target, sum(volume) as vol
-    from TradeAggreRecord
-    group by t_day,target
-) v
-on (f.t_day = v. t_day and f.target = v.target)
-group by f.target
-order by  f.target
 

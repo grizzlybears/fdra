@@ -248,16 +248,17 @@ group by t_day,target
         conn.execute( sql, ( self.T_day, self.T_day ) )
 
         sql = '''
-insert into DailyProfitByTraget(t_day,target, profit,fee)
-select t.t_day, t.target,t.profit, f.fee
+insert into DailyProfitByTraget(t_day,target, profit,fee, volume)
+select t.t_day, t.target,t.profit, f.fee, f.vol 
 from temp.profit_stat t 
 left join (
-  select t_day, target, sum(trade_fee) as fee
+  select t_day, target, sum(trade_fee) as fee, sum(volume) as vol
   from  TradeAggreRecord
   where t_day= ? 
   group by t_day, target ) f
 on (t.t_day = f.t_day and t.target = f.target )
         '''
+        
         conn.execute( sql, ( self.T_day, ) )
         
         conn.execute( "drop table temp.profit_stat")
