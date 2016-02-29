@@ -228,40 +228,44 @@ class SingleFileResult:
             pos.save_to_db(cur, self.T_day, record_no )
             record_no = record_no + 1
 
-        conn.execute( "drop table if exists temp.profit_stat")
+        conn.execute( "drop table if exists temp.t")
         
         sql = '''
-create table temp.profit_stat as 
-select t_day, target, sum(s) as profit from 
-(
+create table temp.t as 
     select t_day, target, sum(profit) as s  from TradeAggreRecord r
        where r.t_day = ?    and r.offset='平'
        group by t_day, r.target
-    union
+           '''
+        conn.execute( sql, ( self.T_day,  ) )
+
+        sql = '''
+insert into  temp.t  
     select t_day, target, sum(profit) as s from PositionAggreRecord r
-         where r.t_day = ?
-         group by t_day,r.target
-)
-group by t_day,target
-        '''
-            
-        conn.execute( sql, ( self.T_day, self.T_day ) )
+       where r.t_day = ?
+       group by t_day,r.target
+           '''
+        conn.execute( sql, ( self.T_day,  ) )
+
 
         sql = '''
 insert into DailyProfitByTraget(t_day,target, profit,fee, volume)
-select t.t_day, t.target,t.profit, f.fee, f.vol 
-from temp.profit_stat t 
+select t2.t_day, t2.target,t2.profit, f.fee, f.vol 
+from 
+(
+  select t_day, target, sum(s) as profit
+  from temp.t
+  group by t_day, target
+) t2
 left join (
   select t_day, target, sum(trade_fee) as fee, sum(volume) as vol
   from  TradeAggreRecord
-  where t_day= ? 
+  where t_day= ?
   group by t_day, target ) f
-on (t.t_day = f.t_day and t.target = f.target )
+on (t2.t_day = f.t_day and t2.target = f.target )
         '''
-        
         conn.execute( sql, ( self.T_day, ) )
         
-        conn.execute( "drop table temp.profit_stat")
+        conn.execute( "drop table temp.t")
         
         #####end of 'save_to_db' !
 
