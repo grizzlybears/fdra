@@ -22,7 +22,7 @@ def print_usage( argv0 = MY_NAME ):
     print "Usage:"
     print "  %s import    <日报文件>   导入逐日盯市日报文件" % argv0
     print "  %s importdir <日报目录>   导入指定目录下所有逐日盯市日报文件" % argv0
-    print "  %s stat             显示按品种的盈亏统计"         % argv0
+    print "  %s stat [lastday|YYYY-MM-DD|YYYY-MM ]  显示按品种的盈亏统计"         % argv0
     print "  %s total            显示总盈亏"       % argv0
 
 # 处理 'importdir' 子命令
@@ -73,8 +73,26 @@ def handle_import( argv, argv0 = MY_NAME ):
     return 0
 
 # 处理 'stat' 子命令
-def handle_stat():
-    db_operator.simplest_stat_by_target()
+def handle_stat(argv, argv0 = MY_NAME ):
+    i = len(argv)
+    if ( i < 1 ):
+        # 无参数
+        db_operator.simplest_stat_by_target()
+        print "总计:"
+        db_operator.show_total()
+
+        return 0
+
+    what = argv[0]
+
+    if ("lastday" == what):
+        db_operator.lastday_stat_by_target()
+        print "总计:"
+        db_operator.lastday_total()
+        return 0
+
+    print "尚未实现:("
+    
     return 0
 
 # 处理 'total' 子命令
@@ -97,7 +115,7 @@ def main():
     elif ('importdir' == sub_command ):
         return handle_importdir ( sys.argv[2:] ) 
     elif ('stat' == sub_command ):
-        return handle_stat()
+        return handle_stat( sys.argv[2:])
     elif ('total' == sub_command ):
         return handle_total()
     elif ('help' == sub_command ):

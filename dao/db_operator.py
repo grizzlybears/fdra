@@ -87,4 +87,20 @@ def show_total():
     cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
     subprocess.call(cmd, shell=True)
 
+def lastday_stat_by_target():
+    sql = "select target,sum(profit) - sum(fee) , sum(volume) " \
+         + "  from DailyProfitByTraget " \
+         + "  where t_day = (select max(t_day) from DailyReport)" \
+         + "  group by target order by 2 desc " 
+    cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
+    subprocess.call(cmd, shell=True)
+
+def lastday_total():
+    sql = "select sum(profit) - sum(fee), sum(volume) " \
+         + "  from DailyProfitByTraget "  \
+         + "  where t_day = (select max(t_day) from DailyReport)"
+
+    cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
+    subprocess.call(cmd, shell=True)
+
 
