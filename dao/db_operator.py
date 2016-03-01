@@ -104,4 +104,54 @@ def lastday_total():
     cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
     subprocess.call(cmd, shell=True)
 
+def day_stat_by_target( t_day):
+    sql = "select target, profit - ifnull(fee,0), volume " \
+         + "  from DailyProfitByTraget " \
+         + "  where t_day = '%s'" % (t_day, )\
+         + "  order by 2 desc "  
+    #print "%s\n" % sql
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
+def day_total( t_day ):
+    sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
+         + "  from DailyProfitByTraget "  \
+         + "  where t_day = '%s'" % (t_day, )
+
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
+
+def month_stat_by_target( t_month):
+
+    # DB中的 t_day 是 text型 ^_^
+    sql = "select target, sum(profit - ifnull(fee,0)) , sum(volume) " \
+         + "  from DailyProfitByTraget " \
+         + "  where t_day >= '%s-01'  and t_day <= '%s-31'" % (t_month,t_month )\
+         + "  group by target order by 2 desc "  
+    #print "%s\n" % sql
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
+def month_total( t_month ):
+    sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
+         + "  from DailyProfitByTraget "  \
+         + "  where t_day >= '%s-01' and t_day <= '%s-31' " % (t_month,t_month )
+
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
+
 
