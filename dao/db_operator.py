@@ -154,4 +154,37 @@ def month_total( t_month ):
             ])
 
 
+def check_posi_balance( t_day ):
+    sql = '''
+        select p.target, ifnull( b.s, 0) - ifnull( s.s, 0)   as ba
+        from 
+        (
+          select distinct target
+          from PositionAggreRecord 
+          where t_day =  '%s' 
+          ) p
+        left join 
+        (
+        select target, sum(volume) as s 
+        from PositionAggreRecord 
+        where t_day = '%s' and b_or_s='买'
+        group by target
+         ) b on ( p.target = b.target )
+        left join 
+        (
+        select target, sum(volume) as s 
+        from PositionAggreRecord 
+        where t_day = '%s' and b_or_s='卖'
+        group by target
+         ) s on ( p.target = s.target )
+        where ba <> 0 
+    '''  
+    sql = sql  % (t_day, t_day, t_day )
+   
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
 
+   

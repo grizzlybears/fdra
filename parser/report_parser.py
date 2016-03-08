@@ -267,6 +267,7 @@ on (t2.t_day = f.t_day and t2.target = f.target )
         
         conn.execute( "drop table temp.t")
         
+        db_operator.check_posi_balance( self.T_day )
         #####end of 'save_to_db' !
 
 # 根据'合约'获得其'标的品种'
@@ -473,6 +474,7 @@ def parse_single_file(file_path ):
 
     result.verify()
     #result.dump()
+
 
     return  result
 

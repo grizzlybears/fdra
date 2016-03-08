@@ -9,4 +9,33 @@ order by 2 desc
 select sum(profit) , sum(fee) , sum(profit) - sum(fee) , sum(volume)
 from DailyProfitByTraget
 
+3. 按天的收益排名
+select t_day, profit - ifnull(fee,0) from DailyReport
+order by 2 desc 
+
+
+4. 检测某天的持仓平衡
+select p.target, ifnull( b.s, 0) - ifnull( s.s, 0) as ba 
+from 
+(
+  select distinct target
+  from PositionAggreRecord 
+  where t_day = '2016-03-08'
+  ) p
+left join 
+(
+select target, sum(volume) as s 
+from PositionAggreRecord 
+where t_day = '2016-03-08' and b_or_s='买'
+group by target
+ ) b on ( p.target = b.target )
+left join 
+(
+select target, sum(volume) as s 
+from PositionAggreRecord 
+where t_day = '2016-03-08' and b_or_s='卖'
+group by target
+ ) s on ( p.target = s.target )
+where ba <> 0
+
 
