@@ -20,7 +20,7 @@ Future Daily Report Analyzer
 >
 >fdra importdir <日报目录>   导入指定目录下所有逐日盯市日报文件
 >
->fdra stat             显示按品种的盈亏统计
+>fdra stat [lastday|YYYY-MM|YYYY-MM-DD]  显示按品种的盈亏统计
 >
->fdra total            显示总盈亏
+>fdra total      显示总盈亏
 
