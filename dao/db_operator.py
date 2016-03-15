@@ -76,36 +76,57 @@ def get_db_conn():
 
 def simplest_stat_by_target():
     sql = "select target,ifnull(sum(profit),0) - ifnull(sum(fee),0) , sum(volume) " \
+         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget " \
          + "  group by target order by 2 desc " 
     cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
-    subprocess.call(cmd, shell=True)
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
 
 def show_total():
     sql = "select ifnull(sum(profit),0) - ifnull(sum(fee),0), sum(volume) " \
+         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget " 
-    cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
-    subprocess.call(cmd, shell=True)
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
 
 def lastday_stat_by_target():
     sql = "select target, profit - ifnull(fee,0), volume " \
+         +      ", printf('%.2f', ( profit - ifnull(fee,0))/volume) " \
          + "  from DailyProfitByTraget " \
          + "  where t_day = (select max(t_day) from DailyReport)" \
          + "  order by 2 desc " 
-    cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
-    #print "%s\n" % sql
-    subprocess.call(cmd, shell=True)
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
 
 def lastday_total():
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
+         +      ", printf('%.2f', (sum(profit) - sum(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
          + "  where t_day = (select max(t_day) from DailyReport)"
 
-    cmd = "sqlite3 %s '%s'" % ( DB_NAME, sql)
-    subprocess.call(cmd, shell=True)
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
 
 def day_stat_by_target( t_day):
-    sql = "select target, profit - ifnull(fee,0), volume " \
+    sql = "select target, profit - ifnull(fee,0), volume" \
+         +      ", printf('%.2f', ( profit - ifnull(fee,0))/volume) " \
          + "  from DailyProfitByTraget " \
          + "  where t_day = '%s'" % (t_day, )\
          + "  order by 2 desc "  
@@ -118,6 +139,7 @@ def day_stat_by_target( t_day):
 
 def day_total( t_day ):
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
+         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
          + "  where t_day = '%s'" % (t_day, )
 
@@ -132,6 +154,7 @@ def month_stat_by_target( t_month):
 
     # DB中的 t_day 是 text型 ^_^
     sql = "select target, sum(profit - ifnull(fee,0)) , sum(volume) " \
+         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget " \
          + "  where t_day >= '%s-01'  and t_day <= '%s-31'" % (t_month,t_month )\
          + "  group by target order by 2 desc "  
@@ -144,6 +167,7 @@ def month_stat_by_target( t_month):
 
 def month_total( t_month ):
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
+         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
          + "  where t_day >= '%s-01' and t_day <= '%s-31' " % (t_month,t_month )
 
