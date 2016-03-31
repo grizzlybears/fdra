@@ -59,6 +59,7 @@ def handle_import( argv, argv0 = MY_NAME ):
 
     try:
 
+        print "processing %s" % (argv[0], )
         s = report_parser.parse_single_file( argv[0]  )
 
         report_parser.save_report_to_db(s)

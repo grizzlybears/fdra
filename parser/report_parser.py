@@ -248,8 +248,8 @@ insert into  temp.t
 
 
         sql = '''
-insert into DailyProfitByTraget(t_day,target, profit,fee, volume)
-select t2.t_day, t2.target,t2.profit, f.fee, f.vol 
+insert into DailyProfitByTraget(t_day,target, profit,fee, volume, pos_vol)
+select t2.t_day, t2.target,t2.profit, f.fee, f.vol , pos.vol
 from 
 (
   select t_day, target, sum(s) as profit
@@ -262,8 +262,14 @@ left join (
   where t_day= ?
   group by t_day, target ) f
 on (t2.t_day = f.t_day and t2.target = f.target )
+left join (
+  select t_day, target, ifnull( sum(volume), 0)  as vol
+  from PositionAggreRecord
+  where t_day= ?
+  group by t_day, target ) pos
+on (t2.t_day = pos.t_day and t2.target = pos.target )
         '''
-        conn.execute( sql, ( self.T_day, ) )
+        conn.execute( sql, ( self.T_day,self.T_day,  ) )
         
         conn.execute( "drop table temp.t")
         

@@ -58,13 +58,14 @@ def get_db_conn():
     '''
     conn.execute( sql)
 
-    # 冗余表， 每日按品种的盈亏以及成交手数统计
+    # 冗余表， 每日按品种的盈亏，成交手数，持仓量统计
     sql = ''' CREATE TABLE IF NOT EXISTS DailyProfitByTraget (
        t_day     TEXT
        , target  TEXT
        , profit  NUMERIC    NULL
        , fee     NUMERIC    NULL
        , volume  integer    NULL
+       , pos_vol integer    NULL
        , PRIMARY KEY(t_day, target)
        )
     '''
@@ -99,7 +100,9 @@ def show_total():
 
 
 def lastday_stat_by_target():
-    sql = "select target, profit - ifnull(fee,0), volume " \
+    print "标的|净盈亏|成交量|持仓量|平均每手盈亏"
+    sql = "select target, profit - ifnull(fee,0),  volume " \
+         +      ", pos_vol " \
          +      ", printf('%.2f', ( profit - ifnull(fee,0))/volume) " \
          + "  from DailyProfitByTraget " \
          + "  where t_day = (select max(t_day) from DailyReport)" \
@@ -125,7 +128,9 @@ def lastday_total():
 
 
 def day_stat_by_target( t_day):
+    print "标的|净盈亏|成交量|持仓量|平均每手盈亏"
     sql = "select target, profit - ifnull(fee,0), volume" \
+         +      ", pos_vol " \
          +      ", printf('%.2f', ( profit - ifnull(fee,0))/volume) " \
          + "  from DailyProfitByTraget " \
          + "  where t_day = '%s'" % (t_day, )\
