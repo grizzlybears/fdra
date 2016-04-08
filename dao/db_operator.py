@@ -216,4 +216,15 @@ def check_posi_balance( t_day ):
             , sql
             ])
 
-   
+def daily_stat():
+    sql = "select t_day,  ifnull(profit,0) - ifnull(fee,0) " \
+         + "  from DailyReport "  \
+         + "order by t_day asc" 
+
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
+  

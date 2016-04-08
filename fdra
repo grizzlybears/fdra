@@ -95,6 +95,11 @@ def handle_stat(argv, argv0 = MY_NAME ):
         db_operator.lastday_total()
         return 0
 
+    if ("daily" == what):
+        print "交易日统计:"
+        db_operator.daily_stat()
+        return 0
+
     #check if is 'YYYY-MM-DD'
     reg = re.compile('^\d\d\d\d-\d\d-\d\d$')
     if reg.match(what): 
