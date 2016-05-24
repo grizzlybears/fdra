@@ -228,3 +228,14 @@ def daily_stat():
             ])
 
   
+def daily_stat_sorted():
+    sql = "select t_day,  ifnull(profit,0) - ifnull(fee,0) " \
+         + "  from DailyReport "  \
+         + "order by 2 asc" 
+
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+

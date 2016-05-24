@@ -25,6 +25,7 @@ def print_usage( argv0 = MY_NAME ):
     print "  %s import    <日报文件>   导入逐日盯市日报文件" % argv0
     print "  %s importdir <日报目录>   导入指定目录下所有逐日盯市日报文件" % argv0
     print "  %s stat [lastday|YYYY-MM-DD|YYYY-MM ]  显示按品种的盈亏统计"         % argv0
+    print "  %s stat [daily | daily_top]   显示每日成绩"         % argv0
     print "  %s total            显示总盈亏"       % argv0
 
 # 处理 'importdir' 子命令
@@ -98,6 +99,11 @@ def handle_stat(argv, argv0 = MY_NAME ):
     if ("daily" == what):
         print "交易日统计:"
         db_operator.daily_stat()
+        return 0
+
+    if ("daily_top" == what):
+        print "交易日排行:"
+        db_operator.daily_stat_sorted()
         return 0
 
     #check if is 'YYYY-MM-DD'
