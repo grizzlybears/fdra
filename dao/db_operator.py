@@ -18,6 +18,7 @@ def get_db_conn():
        , fee     NUMERIC
        , balance NUMERIC
        , prev_balance NUMERIC
+       , margin  NUMERIC
        , PRIMARY KEY( t_day)
        )
     '''
@@ -115,9 +116,21 @@ def lastday_stat_by_target():
 
 
 def lastday_total():
+    print "盈亏|手续费|净盈亏| 成交量|持仓量|平均每手盈亏"
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
-         +      ", printf('%.2f', (sum(profit) - sum(fee)) /  sum(volume)  )" \
+         +      ", printf('%.2f', (sum(profit) - sum(fee)) /  sum(volume) )" \
          + "  from DailyProfitByTraget "  \
+         + "  where t_day = (select max(t_day) from DailyReport)"
+
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
+    print "当日结存|保证金占用"
+    sql = "select sum(balance), sum(margin) " \
+         + "  from  DailyReport "  \
          + "  where t_day = (select max(t_day) from DailyReport)"
 
     subprocess.call([
@@ -143,6 +156,7 @@ def day_stat_by_target( t_day):
             ])
 
 def day_total( t_day ):
+    print "盈亏|手续费|净盈亏| 成交量|持仓量|平均每手盈亏"
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
          +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
@@ -154,6 +168,16 @@ def day_total( t_day ):
             , sql
             ])
 
+    print "当日结存|保证金占用"
+    sql = "select sum(balance), sum(margin) " \
+         + "  from  DailyReport "  \
+         + "  where t_day = '%s'" % (t_day, )
+
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
 
 def month_stat_by_target( t_month):
 

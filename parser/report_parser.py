@@ -151,6 +151,8 @@ class SingleFileResult:
     #前日结存 float
     prev_balance = 0.0
 
+    #保证金占用 float
+    margin = 0.0
 
     #成交汇总，数组
     aggregated_tr_arr = []
@@ -195,12 +197,14 @@ class SingleFileResult:
         for pos in self.aggregated_pos_arr:
             pos.dump("    ")
         
-        print "交易日 %s 上日结存=%f 盈亏=%f 手续费=%f 当日结存=%f" % (
+        print "交易日 %s 上日结存=%f 盈亏=%f 手续费=%f 当日结存=%f 保证金占用=%f" % (
                 self.T_day
                 , self.prev_balance 
                 , self.profit
                 , self.fee
-                , self.balance )
+                , self.balance 
+                , self.margin
+                )
 
     def save_to_db(self, conn):
 
@@ -213,9 +217,9 @@ class SingleFileResult:
             print "%s already exsists in DB, pass." % ( self.T_day, )
             return 
 
-        cur.execute( '''insert into DailyReport(t_day, profit, fee, balance, prev_balance ) 
-                values (?, ?, ?, ?, ?)'''
-                , (self.T_day , self.profit , self.fee, self.balance, self.prev_balance)
+        cur.execute( '''insert into DailyReport(t_day, profit, fee, balance, prev_balance, margin) 
+                values (?, ?, ?, ?, ?, ?)'''
+                , (self.T_day , self.profit , self.fee, self.balance, self.prev_balance, self.margin )
                 )
 
         record_no = 0
@@ -432,6 +436,9 @@ def parse_single_file(file_path ):
 
     # 当日结存
     result.balance = sh.cell_value( colx = 2, rowx = 16)
+ 
+    # 保证金占用
+    result.margin = sh.cell_value( colx = 7, rowx = 16)
 
     # 准备处理 期货成交汇总
     row_walker =  TRADE_RECORD_HEADER_ROW
