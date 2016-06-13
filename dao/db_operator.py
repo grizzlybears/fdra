@@ -116,7 +116,7 @@ def lastday_stat_by_target():
 
 
 def lastday_total():
-    print "盈亏|手续费|净盈亏| 成交量|持仓量|平均每手盈亏"
+    print "盈亏|手续费|净盈亏|成交量|平均每手盈亏"
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
          +      ", printf('%.2f', (sum(profit) - sum(fee)) /  sum(volume) )" \
          + "  from DailyProfitByTraget "  \
@@ -156,7 +156,7 @@ def day_stat_by_target( t_day):
             ])
 
 def day_total( t_day ):
-    print "盈亏|手续费|净盈亏| 成交量|持仓量|平均每手盈亏"
+    print "盈亏|手续费|净盈亏|成交量|平均每手盈亏"
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
          +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
