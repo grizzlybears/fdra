@@ -424,21 +424,35 @@ def parse_single_file(file_path ):
     t_day = datetime.strptime( t_day_cv , '%Y-%m-%d').date()
 
     result = SingleFileResult( t_day )
+ 
+    # 定位'期货期权账户资金状况'
+    row_walker =  7 
+    found = False
+    while row_walker < sh.nrows:
+        header_balance =  sh.cell_value(colx = 0 , rowx = row_walker)
+        if ('期货期权账户资金状况' ==  header_balance):
+            found = True
+            break
+        row_walker = row_walker +1
 
+    if not found:
+        raise Exception ("%s 找不到'期货期权账户资金状况'" % (file_path, ) )
+    
+    base_row_num = row_walker 
     # 前日结存
-    result.prev_balance = sh.cell_value( colx = 2, rowx = 11)
+    result.prev_balance = sh.cell_value( colx = 2, rowx = base_row_num + 1)
 
     # 当日盈亏
-    result.profit = sh.cell_value( colx = 2, rowx = 13)
+    result.profit = sh.cell_value( colx = 2, rowx = base_row_num + 3)
 
     # 当日手续费
-    result.fee = sh.cell_value( colx = 2, rowx = 15)
+    result.fee = sh.cell_value( colx = 2, rowx = base_row_num + 5)
 
     # 当日结存
-    result.balance = sh.cell_value( colx = 2, rowx = 16)
+    result.balance = sh.cell_value( colx = 2, rowx = base_row_num + 6)
  
     # 保证金占用
-    result.margin = sh.cell_value( colx = 7, rowx = 16)
+    result.margin = sh.cell_value( colx = 7, rowx = base_row_num + 6)
 
     # 准备处理 期货成交汇总
     row_walker =  TRADE_RECORD_HEADER_ROW
