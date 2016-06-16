@@ -16,7 +16,7 @@ REPORT_TITLE =   "客户交易结算日报(逐日盯市)"
 
 # 期货成交汇总 的搜寻开始位置
 TRADE_RECORD_HEADER_COL = 0
-TRADE_RECORD_HEADER_ROW = 20
+TRADE_RECORD_HEADER_ROW = 18
 
 # 交易日 位置
 T_DAY_COL = 7
