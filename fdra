@@ -105,13 +105,23 @@ def handle_stat(argv, argv0 = MY_NAME ):
         print "交易日排行:"
         db_operator.daily_stat_sorted()
         return 0
+    
 
     #check if is 'YYYY-MM-DD'
     reg = re.compile('^\d\d\d\d-\d\d-\d\d$')
-    if reg.match(what): 
-        db_operator.day_stat_by_target( what )
-        print "总计:"
-        db_operator.day_total( what )
+    if reg.match(what):  
+        if (i >=2 and reg.match(argv[1])):
+            # stat $From  $Until 的形式
+            until = argv[1]
+            print "==== %s ~ %s  区间统计=====" % (what, until)
+            db_operator.range_stat_by_target( what, until )
+            print "总计:"
+            db_operator.range_total( what, until )
+
+        else:
+            print "==== %s  日报=====" % what
+            db_operator.day_stat_by_target( what )
+            db_operator.day_total( what )
         return 0
  
     #check if is 'YYYY-MM'

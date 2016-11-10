@@ -180,7 +180,8 @@ class SingleFileResult:
             pos_profit = pos_profit + pos.profit 
 
         if ( abs( fee - self.fee) > 0.0001 ):
-            raise Exception( "%s: 当日手续费=%f,  成交手续费之和=%f" % (self.T_day,  self.fee, fee))
+            #raise Exception( "%s: 当日手续费=%f,  成交手续费之和=%f" % (self.T_day,  self.fee, fee))
+            print "%s: 当日手续费=%f,  成交手续费之和=%f" % (self.T_day,  self.fee, fee)
 
         profit = flat_profit + pos_profit 
         if ( abs( profit - self.profit) > 0.0001 ):

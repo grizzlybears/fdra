@@ -206,6 +206,33 @@ def month_total( t_month ):
             , sql
             ])
 
+def range_stat_by_target( d_from, d_until):
+
+    # DB中的 t_day 是 text型 ^_^
+    sql = "select target, sum(profit - ifnull(fee,0)) , sum(volume) " \
+         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
+         + "  from DailyProfitByTraget " \
+         + "  where t_day >= '%s'  and t_day <= '%s-31'" % (d_from, d_until)\
+         + "  group by target order by 2 desc "  
+    #print "%s\n" % sql
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
+def range_total( d_from, d_until ):
+    sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
+         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
+         + "  from DailyProfitByTraget "  \
+         + "  where t_day >= '%s' and t_day <= '%s' " % (d_from, d_until)
+
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
 
 def check_posi_balance( t_day ):
     sql = '''
