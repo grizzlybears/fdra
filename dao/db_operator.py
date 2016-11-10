@@ -180,32 +180,13 @@ def day_total( t_day ):
             ])
 
 def month_stat_by_target( t_month):
-
     # DB中的 t_day 是 text型 ^_^
-    sql = "select target, sum(profit - ifnull(fee,0)) , sum(volume) " \
-         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
-         + "  from DailyProfitByTraget " \
-         + "  where t_day >= '%s-01'  and t_day <= '%s-31'" % (t_month,t_month )\
-         + "  group by target order by 2 desc "  
-    #print "%s\n" % sql
-    subprocess.call([
-            'sqlite3'
-            , DB_NAME
-            , sql
-            ])
-
+    range_stat_by_target( t_month + '-01' , t_month + '-31' )
+    
 def month_total( t_month ):
-    sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
-         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
-         + "  from DailyProfitByTraget "  \
-         + "  where t_day >= '%s-01' and t_day <= '%s-31' " % (t_month,t_month )
-
-    subprocess.call([
-            'sqlite3'
-            , DB_NAME
-            , sql
-            ])
-
+    # DB中的 t_day 是 text型 ^_^
+    range_total( t_month + '-01' , t_month + '-31' )
+ 
 def range_stat_by_target( d_from, d_until):
 
     # DB中的 t_day 是 text型 ^_^
