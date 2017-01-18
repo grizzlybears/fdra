@@ -94,6 +94,7 @@ def show_total():
          + " , printf('%.2f', ( total(r.profit) - total(r.fee)) / t.v )" \
          + " from DailyReport r" \
          + " left join ( select  t_day , total(volume) as v from TradeAggreRecord  ) t on r.t_day = t.t_day"
+    print "净盈亏|成交量|平均每手盈亏"
     subprocess.call([
             'sqlite3'
             , DB_NAME
@@ -208,9 +209,10 @@ def range_total( d_from, d_until ):
     sql = "select total(r.profit) - total(r.fee)  , t.v  " \
          + " , printf('%.2f', ( total(r.profit) - total(r.fee)) / t.v )" \
          + " from DailyReport r" \
-         + " left join ( select  t_day , total(volume) as v from TradeAggreRecord  ) t on r.t_day = t.t_day" \
+         + " left join ( select  t_day , total(volume) as v from TradeAggreRecord where t_day >= '%s' and t_day <= '%s' ) t on r.t_day = t.t_day" % (d_from, d_until) \
          + " where r.t_day >= '%s' and r.t_day <= '%s' " % (d_from, d_until)
 
+    print "净盈亏|成交量|平均每手盈亏"
     subprocess.call([
             'sqlite3'
             , DB_NAME
