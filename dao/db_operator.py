@@ -90,9 +90,10 @@ def simplest_stat_by_target():
 
 
 def show_total():
-    sql = "select ifnull(sum(profit),0) - ifnull(sum(fee),0), sum(volume) " \
-         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
-         + "  from DailyProfitByTraget " 
+    sql = "select total(r.profit) - total(r.fee)  , t.v  " \
+         + " , printf('%.2f', ( total(r.profit) - total(r.fee)) / t.v )" \
+         + " from DailyReport r" \
+         + " left join ( select  t_day , total(volume) as v from TradeAggreRecord  ) t on r.t_day = t.t_day"
     subprocess.call([
             'sqlite3'
             , DB_NAME
@@ -116,7 +117,7 @@ def lastday_stat_by_target():
 
 
 def lastday_total():
-    print "盈亏|手续费|净盈亏|成交量|平均每手盈亏"
+    print "盈亏|成交手续费|净盈亏|成交量|平均每手盈亏"
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
          +      ", printf('%.2f', (sum(profit) - sum(fee)) /  sum(volume) )" \
          + "  from DailyProfitByTraget "  \
@@ -128,8 +129,8 @@ def lastday_total():
             , sql
             ])
 
-    print "当日结存|保证金占用"
-    sql = "select sum(balance), sum(margin) " \
+    print "当日结存|保证金占用|当日手续费"
+    sql = "select sum(balance), sum(margin), sum(fee) " \
          + "  from  DailyReport "  \
          + "  where t_day = (select max(t_day) from DailyReport)"
 
@@ -156,7 +157,7 @@ def day_stat_by_target( t_day):
             ])
 
 def day_total( t_day ):
-    print "盈亏|手续费|净盈亏|成交量|平均每手盈亏"
+    print "盈亏|成交手续费|净盈亏|成交量|平均每手盈亏"
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
          +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
@@ -168,8 +169,8 @@ def day_total( t_day ):
             , sql
             ])
 
-    print "当日结存|保证金占用"
-    sql = "select sum(balance), sum(margin) " \
+    print "当日结存|保证金占用|当日手续费"
+    sql = "select sum(balance), sum(margin),sum(fee) " \
          + "  from  DailyReport "  \
          + "  where t_day = '%s'" % (t_day, )
 
@@ -202,11 +203,13 @@ def range_stat_by_target( d_from, d_until):
             , sql
             ])
 
-def range_total( d_from, d_until ):
-    sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
-         +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
-         + "  from DailyProfitByTraget "  \
-         + "  where t_day >= '%s' and t_day <= '%s' " % (d_from, d_until)
+def range_total( d_from, d_until ): 
+    
+    sql = "select total(r.profit) - total(r.fee)  , t.v  " \
+         + " , printf('%.2f', ( total(r.profit) - total(r.fee)) / t.v )" \
+         + " from DailyReport r" \
+         + " left join ( select  t_day , total(volume) as v from TradeAggreRecord  ) t on r.t_day = t.t_day" \
+         + " where r.t_day >= '%s' and r.t_day <= '%s' " % (d_from, d_until)
 
     subprocess.call([
             'sqlite3'
