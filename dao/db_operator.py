@@ -27,6 +27,8 @@ def get_db_conn():
     sql = ''' CREATE TABLE IF NOT EXISTS TradeAggreRecord (
        t_day     TEXT
        , record_no integer
+       , trade_seq integer
+       , trade_at  TEXT
        , contract  TEXT
        , target    TEXT
        , b_or_s    TEXT

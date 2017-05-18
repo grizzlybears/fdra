@@ -6,6 +6,8 @@ import xlrd
 from xlrd import book
 from xlrd import sheet
 
+from  operator import  attrgetter
+
 import sqlite3
 
 import dao
@@ -27,6 +29,13 @@ POS_RECORD_HEADER_COL = 0
 
 # 成交汇总记录
 class TradeAggreRecord:
+
+    #成交序列号
+    trade_seq = 0
+
+    #成交时刻 YYYY-MM-DD hh:mm:ss
+    trade_at = ""
+
     #合约
     contract = ""
 
@@ -69,13 +78,19 @@ class TradeAggreRecord:
 
     def save_to_db(self, dbcur, t_day, record_no):
         dbcur.execute( '''insert into  TradeAggreRecord(t_day,record_no
-                , contract, target, offset, b_or_s, volume, price
+                , trade_seq , trade_at
+                , contract, target, offset, b_or_s
+                , volume, price, ammount 
                 , profit, trade_fee ) 
             values (?, ?
-                 , ?, ?, ?, ?, ?, ?
+                 , ?, ?
+                 , ?, ?, ?, ?
+                 , ?, ?, ?
                  , ?, ?)'''
                 , ( t_day , record_no
-                    , self.contract, self.target, self.offset, self.b_or_s , self.volume , self.price
+                    , self.trade_seq , self.trade_at
+                    , self.contract, self.target, self.offset, self.b_or_s 
+                    , self.volume , self.price, self.ammount 
                     , self.profit , self.trade_fee 
                   )
                 )
@@ -305,15 +320,21 @@ def get_target_from_contract( contract):
 
 
 
-#解析一行 成交汇总
+#解析一行 成交明细
 def parse_1_tr_row( cells_in_row, rowno ):
 
     col_count = len(cells_in_row)
-    if ( col_count < 9 ):
-        print "第%d行只有%d列，不是有效的'成交汇总'行 " % ( rowno, col_count)
+    if ( col_count < 12 ):
+        print "第%d行只有%d列，不是有效的'成交明细'行 " % ( rowno, col_count)
         return None
 
     one_entry =  TradeAggreRecord()
+ 
+    #成交序列号
+    one_entry.trade_seq = cells_in_row[1].value
+
+    #成交时刻 YYYY-MM-DD hh:mm:ss
+    one_entry.trade_at = "%s %s" % (cells_in_row[11].value, cells_in_row[2].value )
 
     #合约
     one_entry.contract = cells_in_row[0].value
@@ -327,32 +348,32 @@ def parse_1_tr_row( cells_in_row, rowno ):
     one_entry.target = target
 
     #买/卖
-    one_entry.b_or_s = cells_in_row[1].value.strip()
+    one_entry.b_or_s = cells_in_row[3].value.strip()
     if (one_entry.b_or_s not in ['买', '卖']): 
         print "第%d行 无法解析出‘买卖标志’，不是有效的'成交汇总'行 " % ( rowno, )
         return None
 
     #开/平
-    one_entry.offset = cells_in_row[7].value.strip()
+    one_entry.offset = cells_in_row[8].value.strip()
     if (one_entry.offset not in ['开', '平']): 
         print "第%d行 无法解析出‘开平标志’ (%s)，不是有效的'成交汇总'行 " % ( rowno, one_entry.offset)
         return None
 
     #价
-    one_entry.price = float(cells_in_row[3].value)
+    one_entry.price = float(cells_in_row[5].value)
 
     #手数
-    one_entry.volume = int( cells_in_row[4].value)
+    one_entry.volume = int( cells_in_row[6].value)
  
     #金额
-    one_entry.ammount = float(cells_in_row[5].value)
+    one_entry.ammount = float(cells_in_row[7].value)
 
     #平盈亏
     if ('平' == one_entry.offset):
-        one_entry.profit = float (cells_in_row[9].value)
+        one_entry.profit = float (cells_in_row[10].value)
 
     #费
-    one_entry.trade_fee = float (cells_in_row[8].value)
+    one_entry.trade_fee = float (cells_in_row[9].value)
 
     return one_entry
 
@@ -398,6 +419,40 @@ def parse_1_pos_row( cells_in_row, rowno ):
 
     return one_entry
 
+# 解析'成交明细' sheet， 返回一个 TradeAggreRecord的数组
+def parse_tr_details_sheet( file_path, sh):
+    tr_arr = []
+
+    #定位'成交明细'格子
+    row_walker = 0 
+    found = False
+    while row_walker < sh.nrows:
+        if ('成交明细' ==  sh.cell_value(colx = 0 , rowx = row_walker)):
+            found = True
+            break;
+        row_walker = row_walker +1
+   
+    if  not found :
+        raise Exception (" 找不到'成交明细'格子" % (file_path, ) )
+
+    row_walker = row_walker + 2
+    col0 = sh.cell_value (colx = 0 , rowx =  row_walker)
+    while ( '合计' !=  col0): 
+        #print "processing row %d" % ( row_walker, )
+        one_tr_entry = parse_1_tr_row( sh.row( row_walker), row_walker )
+
+        if ( one_tr_entry is not None):
+            #one_tr_entry.dump()
+            tr_arr.append( one_tr_entry)
+
+        row_walker = row_walker + 1
+        col0 = sh.cell_value (colx = 0 , rowx =  row_walker)
+
+    # 法克！美尔雅的日报里，‘实际成交日期’永远等于‘交易日’
+    # 只能用‘成交序列号’先排一下
+    tr_arr.sort( key = attrgetter('trade_seq'))
+
+    return tr_arr
 
 
 # 解析单个日报文件
@@ -418,6 +473,11 @@ def parse_single_file(file_path ):
     title = sh.cell_value(colx=0 , rowx=1)
     if (REPORT_TITLE != title):
         raise Exception( "%s 的不是 '%s'" % (file_path,REPORT_TITLE ) )
+
+    # 获得'成交明细' sheet
+    sh_tr_details = book.sheet_by_name("成交明细")
+    if (sh_tr_details  is None ):
+        raise Exception( "%s 里找不到'成交明细'sheet" % (file_path) )
 
     # 获得交易日
     t_day_cv =  sh.cell_value( colx = T_DAY_COL, rowx = T_DAY_ROW )
@@ -472,12 +532,15 @@ def parse_single_file(file_path ):
     col0 = sh.cell_value (colx = TRADE_RECORD_HEADER_COL , rowx =  row_walker)
     while ( '合计' !=  col0):
         #print "processing row %d" % ( row_walker, )
-        one_tr_entry = parse_1_tr_row( sh.row( row_walker), row_walker )
+        #one_tr_entry = parse_1_tr_row( sh.row( row_walker), row_walker )
 
-        if ( one_tr_entry is not None):
-            #one_tr_entry.dump()
-            result.aggregated_tr_arr.append( one_tr_entry)
-
+        #if ( one_tr_entry is not None):
+        #    #one_tr_entry.dump()
+        #    result.aggregated_tr_arr.append( one_tr_entry)
+        
+        #
+        #  之后会解析 '成交明细' sheet，这里一概跳过即可
+        #
         row_walker = row_walker + 1
         col0 = sh.cell_value (colx = TRADE_RECORD_HEADER_COL , rowx =  row_walker)
 
@@ -500,9 +563,12 @@ def parse_single_file(file_path ):
         row_walker = row_walker + 1
         col0 = sh.cell_value (colx = POS_RECORD_HEADER_COL , rowx =  row_walker)
 
-    result.verify()
-    #result.dump()
+    # 成交明细
+    result.aggregated_tr_arr =   parse_tr_details_sheet(file_path, sh_tr_details )
 
+    result.verify()
+
+    #result.dump()
 
     return  result
 
