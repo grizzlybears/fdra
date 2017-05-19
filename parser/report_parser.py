@@ -319,6 +319,37 @@ def get_target_from_contract( contract):
     return target 
 
 
+class SimpleTwoLegs:
+    leg1   = ""
+    leg2   = ""
+    target = ""
+
+class SimpleTwoLegsTr:
+    leg1_dir = 0  # 1:买，-1:卖
+    leg1_tr  = -1  # tr_arr中的下标
+    leg2_tr  = -1
+
+class SimpleTwoLegsTrArr:
+    stl_arr = dict() # SimpleTwoLegs => SimpleTowLegsTr[]
+    tr_arr = []
+
+    def __init__(self, tr_arr):
+        self.tr_arr = tr_arr
+
+    def add_stl_pair(self, stl, stl_tr):
+        if stl not in self.stl_arr:
+            aself.stl_arr[stl] = [] 
+            
+        self.stl_arr[stl].append(stl_tr )
+
+class UnhedgedTr:
+    unhedged_arr = dict() # contract => 
+
+ 
+# 检查'成交明细'数组
+def scan_tr_detail(tr_arr):
+  
+
 
 #解析一行 成交明细
 def parse_1_tr_row( cells_in_row, rowno ):
