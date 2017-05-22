@@ -388,12 +388,22 @@ class SimpleTwoLegsTrArr:
             stl_trs = self.stl_arr[he]
             
             balance = 0
+            gross = 0
+            fee = 0
 
             for p in stl_trs:
                 p.leg1_tr.dump2(indent)
                 p.leg2_tr.dump2(indent)
                 balance = balance + p.leg1_dir 
-                print "%s %d" % (indent, balance)
+
+                fee = p.leg1_tr.trade_fee + p.leg2_tr.trade_fee
+
+                if ( 1 ==  p.leg1_dir ):
+                    gross = gross + p.leg2_tr.ammount - p.leg1_tr.ammount
+                else:
+                    gross = gross + p.leg1_tr.ammount - p.leg2_tr.ammount
+
+                print "%s %d,  毛 %d,  净 %d " % (indent, balance, gross, gross - fee)
 
             print ""
 
@@ -441,6 +451,7 @@ class TrScannerForSimple2L:
                     dupped = copy.deepcopy(tr)
                     dupped.volume = 1
                     dupped.sub_seq = i
+                    dupped.ammount = tr.ammount / tr.volume 
                     self.process_1_tr(dupped)
                     i = i+1
 
