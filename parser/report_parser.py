@@ -82,12 +82,11 @@ class TradeAggreRecord:
                 )
 
     def dump2(self, indent = "  "):
-        print "%s %s %s %s 价=%f  金额=%d  费=%f  ( %s - %d @%s)" % ( indent 
+        print "%s %s %s %s 价=%f  费=%f  ( %s - %d @%s)" % ( indent 
                 , self.contract
                 , self.offset 
                 , self.b_or_s 
                 , self.price
-                , self.ammount
                 , self.trade_fee 
                 , self.trade_seq, self.sub_seq , self.trade_at 
                 )
@@ -385,10 +384,16 @@ class SimpleTwoLegsTrArr:
     def dump(self, indent): 
         for he in self.stl_arr.keys():
             print " %s - %s" % ( he.leg1, he.leg2)
-            for p in self.stl_arr[he]:
+
+            stl_trs = self.stl_arr[he]
+            
+            balance = 0
+
+            for p in stl_trs:
                 p.leg1_tr.dump2(indent)
                 p.leg2_tr.dump2(indent)
-                print ""
+                balance = balance + p.leg1_dir 
+                print "%s %d" % (indent, balance)
 
             print ""
 
