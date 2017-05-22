@@ -2,6 +2,8 @@
 from datetime import date
 from datetime import datetime
 
+import copy
+
 import xlrd
 from xlrd import book
 from xlrd import sheet
@@ -63,6 +65,9 @@ class TradeAggreRecord:
     #平仓盈亏 float
     profit = 0.0
 
+    #内部使用
+    sub_seq = 0
+
     def dump(self, indent = "  "):
         print "%s %s(%s) %s %s %d手 价=%f 金额=%d 平盈亏=%f 费=%f" % ( indent 
                 , self.contract
@@ -74,6 +79,17 @@ class TradeAggreRecord:
                 , self.ammount
                 , self.profit 
                 , self.trade_fee 
+                )
+
+    def dump2(self, indent = "  "):
+        print "%s %s %s %s 价=%f  金额=%d  费=%f  ( %s - %d @%s)" % ( indent 
+                , self.contract
+                , self.offset 
+                , self.b_or_s 
+                , self.price
+                , self.ammount
+                , self.trade_fee 
+                , self.trade_seq, self.sub_seq , self.trade_at 
                 )
 
     def save_to_db(self, dbcur, t_day, record_no):
@@ -368,12 +384,13 @@ class SimpleTwoLegsTrArr:
 
     def dump(self, indent): 
         for he in self.stl_arr.keys():
-            print " %s - %s of %s" % ( he.leg1, he.leg2, he.target )
+            print " %s - %s" % ( he.leg1, he.leg2)
             for p in self.stl_arr[he]:
-                p.leg1_tr.dump(indent)
-                p.leg2_tr.dump(indent)
-            print ""
+                p.leg1_tr.dump2(indent)
+                p.leg2_tr.dump2(indent)
+                print ""
 
+            print ""
 
 class TrScannerForSimple2L:
     tr_arr = [] 
@@ -410,7 +427,18 @@ class TrScannerForSimple2L:
 
     def scan(self):
         for tr in self.tr_arr:
-            self.process_1_tr( tr)
+            if tr.volume == 1:
+                self.process_1_tr( copy.copy(tr))
+            else:
+                #人为拆分为多条vol = 1 的记录
+                i = 1
+                while i <= tr.volume :
+                    dupped = copy.deepcopy(tr)
+                    dupped.volume = 1
+                    dupped.sub_seq = i
+                    self.process_1_tr(dupped)
+                    i = i+1
+
     
     def process_1_tr ( self, tr ):
 
