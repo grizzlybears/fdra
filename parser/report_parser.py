@@ -323,6 +323,29 @@ class SimpleTwoLegs:
     leg1   = ""
     leg2   = ""
     target = ""
+    
+    def __hash__(self):
+            return hash((self.leg1, self.leg2, self.target))
+
+    def __cmp__(self, other):
+        if self.leg1 < other.leg1 :
+            return -1
+        elif self.leg1 > other.leg1 :
+            return 1 
+        
+        if self.leg2 < other.leg2 :
+            return -1
+        elif self.leg2 > other.leg2 :
+            return 1 
+        
+        if self.target < other.target :
+            return -1
+        elif self.target > other.target :
+            return 1
+
+        return 0
+
+
 
 class SimpleTwoLegsTr:
     leg1_dir = 0  # 1:买，-1:卖
@@ -336,12 +359,15 @@ class SimpleTwoLegsTrArr:
 
     def add_stl_pair(self, stl, stl_tr):
         if stl not in self.stl_arr:
-            self.stl_arr[stl] = [] 
+            self.stl_arr[stl] = []
+        #    print "new comer:  %s - %s of %s" % ( stl.leg1,stl.leg2, stl.target )
+        #else:
+        #    print "exists :  %s - %s of %s" % ( stl.leg1,stl.leg2, stl.target )
             
         self.stl_arr[stl].append(stl_tr )
 
     def dump(self, indent): 
-        for he in self.stl_arr.iterkeys():
+        for he in self.stl_arr.keys():
             print " %s - %s of %s" % ( he.leg1, he.leg2, he.target )
             for p in self.stl_arr[he]:
                 p.leg1_tr.dump(indent)
