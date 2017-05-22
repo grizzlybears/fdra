@@ -326,28 +326,143 @@ class SimpleTwoLegs:
 
 class SimpleTwoLegsTr:
     leg1_dir = 0  # 1:买，-1:卖
-    leg1_tr  = -1  # tr_arr中的下标
-    leg2_tr  = -1
+    leg1_tr  = None 
+    leg2_tr  = None 
 
 class SimpleTwoLegsTrArr:
     stl_arr = dict() # SimpleTwoLegs => SimpleTowLegsTr[]
-    tr_arr = []
+
+    #def __init__(self, tr_arr):
+
+    def add_stl_pair(self, stl, stl_tr):
+        if stl not in self.stl_arr:
+            self.stl_arr[stl] = [] 
+            
+        self.stl_arr[stl].append(stl_tr )
+
+    def dump(self, indent): 
+        for he in self.stl_arr.iterkeys():
+            print " %s - %s of %s" % ( he.leg1, he.leg2, he.target )
+            for p in self.stl_arr[he]:
+                p.leg1_tr.dump(indent)
+                p.leg2_tr.dump(indent)
+            print ""
+
+
+class TrScannerForSimple2L:
+    tr_arr = [] 
+    hedged_tr = SimpleTwoLegsTrArr()
+  
+    unhedged_arr = dict() # contract =>  'TradeAggreRecord arr'
 
     def __init__(self, tr_arr):
         self.tr_arr = tr_arr
 
-    def add_stl_pair(self, stl, stl_tr):
-        if stl not in self.stl_arr:
-            aself.stl_arr[stl] = [] 
-            
-        self.stl_arr[stl].append(stl_tr )
+    def dump(self):
+        # 已对冲成交
+        print " ===== 已对冲成交 start ===== "
 
-class UnhedgedTr:
-    unhedged_arr = dict() # contract => 
+        self.dump_hedged()
+        print " ===== 已对冲成交 end ===== "
+
+
+        # 未对冲成交
+        print ""
+        print ""
+        print ""
+        print " ===== 未对冲成交 start !!! === "
+        self.dump_unhedged()
+        print " ===== 未对冲成交 end === "
+
+    def dump_hedged(self):
+        self.hedged_tr.dump("    ")
+
+    def dump_unhedged(self):
+        for k, v in self.unhedged_arr:
+            for tr in v:
+                tr.dump("    ");
+
+    def scan(self):
+        for tr in self.tr_arr:
+            self.process_1_tr( tr)
+    
+    def process_1_tr ( self, tr ):
+
+        #合约
+        contract = tr.contract
+
+        #品种
+        target = tr.target
+
+        if contract in self.unhedged_arr:
+            #有未对冲的该合约
+            #因为成交是确实发生的，这里没有必要去人为地‘平掉’
+            #无条件记录下即可
+            self.unhedged_arr[contract].append( tr)
+        else:
+            #我们试图为其‘对冲’
+            got_hedged = False
+            for unh_contra in self.unhedged_arr.iterkeys():
+
+                #品种不同，我们认为不能对冲
+                if  get_target_from_contract(unh_contra ) != tr.target:
+                    continue
+
+                #存在同品种的未对冲成交
+                unh_trs = self.unhedged_arr[unh_contra]
+
+                #我们找到一个同品种反方向的即认为其‘对冲’ ^_^
+                for tr_walker in unh_trs:
+                    if tr_walker.b_or_s == tr.b_or_s:
+                        continue
+
+                    #‘对冲’了 
+                    got_hedged = True
+                    he_key = SimpleTwoLegs()
+                    if ( contract < tr_walker.contract ):
+                        leg1 = tr
+                        leg2 = tr_walker
+                    else:
+                        leg2 = tr
+                        leg1 = tr_walker
+
+                    he_key.target = target
+                    he_key.leg1 = leg1.contract 
+                    he_key.leg2 = leg2.contract 
+                    
+                    he_value = SimpleTwoLegsTr()
+                    he_value.leg1_tr = leg1
+                    he_value.leg2_tr = leg2
+                    if (leg1.b_or_s == '买'):
+                        he_value.leg1_dir = 1
+                    else:
+                        he_value.leg1_dir = -1
+                    
+                    self.hedged_tr.add_stl_pair( he_key, he_value)
+
+                    unh_trs.remove( tr_walker)
+
+                    if ( len(unh_trs) == 0) :
+                        del self.unhedged_arr[unh_contra]
+                    break;
+
+                if got_hedged:
+                    break;
+
+            if not got_hedged:
+                self.unhedged_arr[contract] = []
+                self.unhedged_arr[contract].append(tr)
+
+
+
 
  
 # 检查'成交明细'数组
-def scan_tr_detail(tr_arr):
+def scan_tr_detail(tr_arr): 
+    
+    scanner = TrScannerForSimple2L(tr_arr)
+    scanner.scan()
+    scanner.dump()
   
 
 
@@ -599,6 +714,7 @@ def parse_single_file(file_path ):
 
     result.verify()
 
+    scan_tr_detail(result.aggregated_tr_arr)
     #result.dump()
 
     return  result
