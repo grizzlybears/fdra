@@ -436,7 +436,7 @@ class TrScannerForSimple2L:
         self.hedged_tr.dump("    ")
 
     def dump_unhedged(self):
-        for k, v in self.unhedged_arr:
+        for k,v in self.unhedged_arr.iteritems():
             for tr in v:
                 tr.dump("    ");
 
