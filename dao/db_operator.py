@@ -186,10 +186,18 @@ def day_total( t_day ):
 def month_stat_by_target( t_month):
     # DB中的 t_day 是 text型 ^_^
     range_stat_by_target( t_month + '-01' , t_month + '-31' )
+ 
+def year_stat_by_target( t_year):
+    # DB中的 t_day 是 text型 ^_^
+    range_stat_by_target( t_year + '-01-01' , t_year + '-12-31' )
     
 def month_total( t_month ):
     # DB中的 t_day 是 text型 ^_^
     range_total( t_month + '-01' , t_month + '-31' )
+ 
+def year_total( t_year ):
+    # DB中的 t_day 是 text型 ^_^
+    range_total( t_year + '-01-01' , t_year + '-12-31' )
  
 def range_stat_by_target( d_from, d_until):
 

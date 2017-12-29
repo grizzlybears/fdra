@@ -132,6 +132,13 @@ def handle_stat(argv, argv0 = MY_NAME ):
         db_operator.month_total( what )
         return 0
     
+    #check if is 'YYYY'
+    reg = re.compile('^\d\d\d\d$')
+    if reg.match(what): 
+        db_operator.year_stat_by_target( what )
+        print "总计:"
+        db_operator.year_total( what )
+        return 0
 
     print "尚未实现 '%s' :(" % ( what, )
     
