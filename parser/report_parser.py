@@ -594,7 +594,8 @@ def parse_1_tr_row( cells_in_row, rowno ):
     return one_entry
 
 #解析一行 持仓汇总
-def parse_1_pos_row( cells_in_row, rowno ):
+# 2018年底为止的格式，第一列是‘合约’
+def parse_1_pos_row_until2018( cells_in_row, rowno ):
 
     col_count = len(cells_in_row)
     if ( col_count < 9 ):
@@ -634,6 +635,50 @@ def parse_1_pos_row( cells_in_row, rowno ):
     one_entry.profit = float (cells_in_row[7].value)
 
     return one_entry
+
+#解析一行 持仓汇总
+# 2019年开始的格式，第一列是‘日期’
+def parse_1_pos_row_2019( cells_in_row, rowno ):
+
+    col_count = len(cells_in_row)
+    if ( col_count < 10 ):
+        print "第%d行只有%d列，不是有效的'持仓汇总'行 " % ( rowno, col_count)
+        return None
+
+    one_entry =  PositionAggreRecord()
+
+    #合约
+    one_entry.contract = cells_in_row[1].value
+
+    #品种
+    target = get_target_from_contract( one_entry.contract )
+    if (target is None):
+        print "第%d行 无法解析出‘标的品种’，不是有效的'持仓汇总'行 " % ( rowno, )
+        return None
+
+    one_entry.target = target
+
+    #买/卖
+    buy_vol_cell = cells_in_row[2]
+    if ( buy_vol_cell.ctype == xlrd.XL_CELL_NUMBER  ):
+        one_entry.b_or_s = '买'
+        one_entry.volume = int(buy_vol_cell.value)
+        one_entry.avg_price = float(cells_in_row[3].value)
+    else:
+        one_entry.b_or_s = '卖'
+        one_entry.volume = int(cells_in_row[4].value)
+        one_entry.avg_price = float(cells_in_row[5].value)
+
+    #昨价
+    one_entry.prev_settle_price = float(cells_in_row[6].value)
+    #今价
+    one_entry.today_settle_price = float(cells_in_row[7].value)
+
+    #盈亏
+    one_entry.profit = float (cells_in_row[8].value)
+
+    return one_entry
+
 
 # 解析'成交明细' sheet， 返回一个 TradeAggreRecord的数组
 def parse_tr_details_sheet( file_path, sh):
@@ -763,14 +808,19 @@ def parse_single_file(file_path ):
     #准备处理 持仓记录
     row_walker = row_walker + 3
     header_cv =  sh.cell_value(colx = TRADE_RECORD_HEADER_COL , rowx = row_walker)
-    if ('合约' !=  header_cv):
+    if ('合约' !=  header_cv and  '日期'!= header_cv):
         raise Exception ("%s 找不到'期货持仓汇总'区域" % (file_path, ) )
  
     row_walker = row_walker + 1
     col0 = sh.cell_value (colx = POS_RECORD_HEADER_COL , rowx =  row_walker)
     while ( '合计' !=  col0):
         #print "processing row %d" % ( row_walker, )
-        one_pos_entry = parse_1_pos_row( sh.row( row_walker), row_walker )
+
+        if '合约' ==  header_cv:
+            one_pos_entry = parse_1_pos_row_until2018( sh.row( row_walker), row_walker )
+        else:
+            one_pos_entry = parse_1_pos_row_2019( sh.row( row_walker), row_walker )
+
 
         if ( one_pos_entry is not None):
             #one_pos_entry.dump()
