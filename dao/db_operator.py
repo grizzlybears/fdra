@@ -105,6 +105,13 @@ def show_total():
 
 
 def lastday_stat_by_target():
+    sql ="select max(t_day) from DailyReport" 
+    subprocess.call([
+            'sqlite3'
+            , DB_NAME
+            , sql
+            ])
+
     print "标的|净盈亏|成交量|持仓量|平均每手盈亏"
     sql = "select target, profit - ifnull(fee,0),  volume " \
          +      ", pos_vol " \
