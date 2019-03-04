@@ -78,6 +78,24 @@ def get_db_conn():
 
     return conn 
 
+# 打开DB,返回 sqlite3.Connection
+def just_get_db_conn():
+    conn = sqlite3.connect( DB_NAME)
+    return conn
+
+# 返回查询sql结果中第一行第一列
+def query_1_row_1_col(conn, sql):
+    dbcur = conn.cursor()
+
+    dbcur.execute(sql)
+
+    row = dbcur.fetchone()
+    if row is None:
+        return None
+    return row[0]
+
+
+
 def simplest_stat_by_target():
     sql = "select target,ifnull(sum(profit),0) - ifnull(sum(fee),0) , sum(volume) " \
          +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
@@ -104,64 +122,18 @@ def show_total():
             ])
 
 
+def get_last_day():
+    conn = just_get_db_conn()
+    last_day = query_1_row_1_col(conn, 'select max(t_day) from DailyReport')
+
+    return last_day
+
+
 def lastday_stat_by_target():
-    sql ="select max(t_day) from DailyReport" 
-    subprocess.call([
-            'sqlite3'
-            , DB_NAME
-            , sql
-            ])
+    last_day = get_last_day()
+    print last_day
 
-    print "标的|净盈亏|成交量|持仓量|平均每手盈亏"
-    sql = "select target, profit - ifnull(fee,0),  volume " \
-         +      ", pos_vol " \
-         +      ", printf('%.2f', ( profit - ifnull(fee,0))/volume) " \
-         + "  from DailyProfitByTraget " \
-         + "  where t_day = (select max(t_day) from DailyReport)" \
-         + "  order by 2 desc " 
-    subprocess.call([
-            'sqlite3'
-            , DB_NAME
-            , sql
-            ])
-
-
-def lastday_total():
-    print "【商品】\n盈亏 |手续费|净盈亏|成交量|平均每手盈亏"
-    sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
-         +      ", printf('%.2f', (sum(profit) - sum(fee)) /  sum(volume) )" \
-         + "  from DailyProfitByTraget "  \
-         + "  where t_day = (select max(t_day) from DailyReport) and target not in ('IF','IC','IH')"
-
-    subprocess.call([
-            'sqlite3'
-            , DB_NAME
-            , sql
-            ])
- 
-    print "【股指】\n盈亏 |手续费|净盈亏|成交量|平均每手盈亏"
-    sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
-         +      ", printf('%.2f', (sum(profit) - sum(fee)) /  sum(volume) )" \
-         + "  from DailyProfitByTraget "  \
-         + "  where t_day = (select max(t_day) from DailyReport) and target in ('IF','IC','IH')"
-
-    subprocess.call([
-            'sqlite3'
-            , DB_NAME
-            , sql
-            ])
-
-    print "当日结存|保证金占用|当日手续费+申报费"
-    sql = "select sum(balance), sum(margin), sum(fee) " \
-         + "  from  DailyReport "  \
-         + "  where t_day = (select max(t_day) from DailyReport)"
-
-    subprocess.call([
-            'sqlite3'
-            , DB_NAME
-            , sql
-            ])
-
+    day_stat_by_target( last_day)
 
 def day_stat_by_target( t_day):
     print "标的|净盈亏|成交量|持仓量|平均每手盈亏"
@@ -177,6 +149,10 @@ def day_stat_by_target( t_day):
             , DB_NAME
             , sql
             ])
+
+def lastday_total():
+    last_day = get_last_day()
+    day_total( last_day)
 
 def day_total( t_day ):
     print "【商品】\n盈亏|成交手续费|净盈亏|成交量|平均每手盈亏"
