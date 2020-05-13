@@ -396,7 +396,7 @@ class SimpleTwoLegsTrArr:
                 p.leg2_tr.dump2(indent)
                 balance = balance + p.leg1_dir 
 
-                fee = p.leg1_tr.trade_fee + p.leg2_tr.trade_fee
+                fee = fee + p.leg1_tr.trade_fee + p.leg2_tr.trade_fee
 
                 if ( 1 ==  p.leg1_dir ):
                     gross = gross + p.leg2_tr.ammount - p.leg1_tr.ammount

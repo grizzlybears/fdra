@@ -167,7 +167,7 @@ def day_total( t_day ):
             , sql
             ])
 
-    print "【股指】\n盈盈亏|成交手续费|净盈亏|成交量|平均每手盈亏"
+    print "【股指】\n盈亏|成交手续费|净盈亏|成交量|平均每手盈亏"
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
          +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
