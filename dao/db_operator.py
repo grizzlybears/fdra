@@ -114,7 +114,7 @@ def show_total():
          + " , printf('%.2f', ( total(r.profit) - total(r.fee)) / t.v )" \
          + " from DailyReport r" \
          + " left join ( select  t_day , total(volume) as v from TradeAggreRecord  ) t on r.t_day = t.t_day"
-    print "净盈亏|成交量|平均每手盈亏"
+    print("净盈亏|成交量|平均每手盈亏")
     subprocess.call([
             'sqlite3'
             , DB_NAME
@@ -131,12 +131,12 @@ def get_last_day():
 
 def lastday_stat_by_target():
     last_day = get_last_day()
-    print last_day
+    print(last_day)
 
     day_stat_by_target( last_day)
 
 def day_stat_by_target( t_day):
-    print "标的|净盈亏|成交量|持仓量|平均每手盈亏"
+    print("标的|净盈亏|成交量|持仓量|平均每手盈亏")
     sql = "select target, profit - ifnull(fee,0), volume" \
          +      ", pos_vol " \
          +      ", printf('%.2f', ( profit - ifnull(fee,0))/volume) " \
@@ -155,7 +155,7 @@ def lastday_total():
     day_total( last_day)
 
 def day_total( t_day ):
-    print "【商品】\n盈亏|成交手续费|净盈亏|成交量|平均每手盈亏"
+    print("【商品】\n盈亏|成交手续费|净盈亏|成交量|平均每手盈亏")
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
          +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
@@ -167,7 +167,7 @@ def day_total( t_day ):
             , sql
             ])
 
-    print "【股指】\n盈亏|成交手续费|净盈亏|成交量|平均每手盈亏"
+    print("【股指】\n盈亏|成交手续费|净盈亏|成交量|平均每手盈亏")
     sql = "select sum(profit),  sum(fee), sum(profit) - sum(fee), sum(volume) " \
          +      ", printf('%.2f', (total(profit) - total(fee)) /  sum(volume)  )" \
          + "  from DailyProfitByTraget "  \
@@ -178,7 +178,7 @@ def day_total( t_day ):
             , DB_NAME
             , sql
             ])
-    print "当日结存|保证金占用|当日手续费+申报费"
+    print("当日结存|保证金占用|当日手续费+申报费")
     sql = "select sum(balance), sum(margin),sum(fee) " \
          + "  from  DailyReport "  \
          + "  where t_day = '%s'" % (t_day, )
@@ -228,7 +228,7 @@ def range_total( d_from, d_until ):
          + " left join ( select  t_day , total(volume) as v from TradeAggreRecord where t_day >= '%s' and t_day <= '%s' ) t on r.t_day = t.t_day" % (d_from, d_until) \
          + " where r.t_day >= '%s' and r.t_day <= '%s' " % (d_from, d_until)
 
-    print "净盈亏|成交量|平均每手盈亏"
+    print("净盈亏|成交量|平均每手盈亏")
     subprocess.call([
             'sqlite3'
             , DB_NAME

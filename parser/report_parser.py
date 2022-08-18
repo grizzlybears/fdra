@@ -69,7 +69,7 @@ class TradeAggreRecord:
     sub_seq = 0
 
     def dump(self, indent = "  "):
-        print "%s %s(%s) %s %s %d手 价=%f 金额=%d 平盈亏=%f 费=%f" % ( indent 
+        print("%s %s(%s) %s %s %d手 价=%f 金额=%d 平盈亏=%f 费=%f" % ( indent 
                 , self.contract
                 , self.target
                 , self.offset 
@@ -79,17 +79,17 @@ class TradeAggreRecord:
                 , self.ammount
                 , self.profit 
                 , self.trade_fee 
-                )
+                ))
 
     def dump2(self, indent = "  "):
-        print "%s %s %s %s 价=%f  费=%f  ( %s - %d @%s)" % ( indent 
+        print("%s %s %s %s 价=%f  费=%f  ( %s - %d @%s)" % ( indent 
                 , self.contract
                 , self.offset 
                 , self.b_or_s 
                 , self.price
                 , self.trade_fee 
                 , self.trade_seq, self.sub_seq , self.trade_at 
-                )
+                ))
 
     def save_to_db(self, dbcur, t_day, record_no):
         dbcur.execute( '''insert into  TradeAggreRecord(t_day,record_no
@@ -138,7 +138,7 @@ class PositionAggreRecord:
     profit = 0.0
 
     def dump(self, indent = "  "):
-        print "%s %s (%s) %s %d手 均价=%f 昨=%f 今=%f 盈亏=%f"  % ( indent
+        print("%s %s (%s) %s %d手 均价=%f 昨=%f 今=%f 盈亏=%f"  % ( indent
                 , self.contract
                 , self.target
                 , self.b_or_s 
@@ -147,7 +147,7 @@ class PositionAggreRecord:
                 , self.prev_settle_price
                 , self.today_settle_price
                 , self.profit 
-                )
+                ))
 
     def save_to_db(self, dbcur, t_day, record_no):
         dbcur.execute( '''insert into  PositionAggreRecord(t_day,record_no
@@ -211,31 +211,31 @@ class SingleFileResult:
 
         if ( abs( fee - self.fee) > 0.0001 ):
             #raise Exception( "%s: 当日手续费=%f,  成交手续费之和=%f" % (self.T_day,  self.fee, fee))
-            print "%s: 当日手续费=%f,  成交手续费之和=%f" % (self.T_day,  self.fee, fee)
+            print("%s: 当日手续费=%f,  成交手续费之和=%f" % (self.T_day,  self.fee, fee))
 
         profit = flat_profit + pos_profit 
         if ( abs( profit - self.profit) > 0.0001 ):
             raise Exception("%s: 当日盈亏=%f,  平盈亏之和=%f , 仓盈亏之和=%f" % ( self.T_day, self.profit , flat_profit, pos_profit))
 
     def dump(self):
-        print "==== %s ===" % self.T_day
+        print("==== %s ===" % self.T_day)
 
-        print "成交汇总:"
+        print("成交汇总:")
         for tr in self.aggregated_tr_arr:
             tr.dump("    ")
 
-        print "持仓汇总"
+        print("持仓汇总")
         for pos in self.aggregated_pos_arr:
             pos.dump("    ")
         
-        print "交易日 %s 上日结存=%f 盈亏=%f 手续费=%f 当日结存=%f 保证金占用=%f" % (
+        print("交易日 %s 上日结存=%f 盈亏=%f 手续费=%f 当日结存=%f 保证金占用=%f" % (
                 self.T_day
                 , self.prev_balance 
                 , self.profit
                 , self.fee
                 , self.balance 
                 , self.margin
-                )
+                ))
 
     def save_to_db(self, conn):
 
@@ -245,7 +245,7 @@ class SingleFileResult:
         rownum = cur.fetchone()[0]
 
         if ( rownum > 0):
-            print "%s already exsists in DB, pass." % ( self.T_day, )
+            print("%s already exsists in DB, pass." % ( self.T_day, ))
             return 
 
         cur.execute( '''insert into DailyReport(t_day, profit, fee, balance, prev_balance, margin) 
@@ -382,8 +382,8 @@ class SimpleTwoLegsTrArr:
         self.stl_arr[stl].append(stl_tr )
 
     def dump(self, indent): 
-        for he in self.stl_arr.keys():
-            print " %s - %s" % ( he.leg1, he.leg2)
+        for he in list(self.stl_arr.keys()):
+            print(" %s - %s" % ( he.leg1, he.leg2))
 
             stl_trs = self.stl_arr[he]
             
@@ -403,9 +403,9 @@ class SimpleTwoLegsTrArr:
                 else:
                     gross = gross + p.leg1_tr.ammount - p.leg2_tr.ammount
 
-                print "%s %d,  毛 %d,  净 %d " % (indent, balance, gross, gross - fee)
+                print("%s %d,  毛 %d,  净 %d " % (indent, balance, gross, gross - fee))
 
-            print ""
+            print("")
 
 class TrScannerForSimple2L:
     tr_arr = [] 
@@ -418,25 +418,25 @@ class TrScannerForSimple2L:
 
     def dump(self):
         # 已对冲成交
-        print " ===== 已对冲成交 start ===== "
+        print(" ===== 已对冲成交 start ===== ")
 
         self.dump_hedged()
-        print " ===== 已对冲成交 end ===== "
+        print(" ===== 已对冲成交 end ===== ")
 
 
         # 未对冲成交
-        print ""
-        print ""
-        print ""
-        print " ===== 未对冲成交 start !!! === "
+        print("")
+        print("")
+        print("")
+        print(" ===== 未对冲成交 start !!! === ")
         self.dump_unhedged()
-        print " ===== 未对冲成交 end === "
+        print(" ===== 未对冲成交 end === ")
 
     def dump_hedged(self):
         self.hedged_tr.dump("    ")
 
     def dump_unhedged(self):
-        for k,v in self.unhedged_arr.iteritems():
+        for k,v in self.unhedged_arr.items():
             for tr in v:
                 tr.dump("    ");
 
@@ -472,7 +472,7 @@ class TrScannerForSimple2L:
         else:
             #我们试图为其‘对冲’
             got_hedged = False
-            for unh_contra in self.unhedged_arr.iterkeys():
+            for unh_contra in self.unhedged_arr.keys():
 
                 #品种不同，我们认为不能对冲
                 if  get_target_from_contract(unh_contra ) != tr.target:
@@ -541,7 +541,7 @@ def parse_1_tr_row( cells_in_row, rowno ):
 
     col_count = len(cells_in_row)
     if ( col_count < 12 ):
-        print "第%d行只有%d列，不是有效的'成交明细'行 " % ( rowno, col_count)
+        print("第%d行只有%d列，不是有效的'成交明细'行 " % ( rowno, col_count))
         return None
 
     one_entry =  TradeAggreRecord()
@@ -558,7 +558,7 @@ def parse_1_tr_row( cells_in_row, rowno ):
     #品种
     target = get_target_from_contract( one_entry.contract )
     if (target is None):
-        print "第%d行 无法解析出‘标的品种’，不是有效的'成交汇总'行 " % ( rowno, )
+        print("第%d行 无法解析出‘标的品种’，不是有效的'成交汇总'行 " % ( rowno, ))
         return None
 
     one_entry.target = target
@@ -566,13 +566,13 @@ def parse_1_tr_row( cells_in_row, rowno ):
     #买/卖
     one_entry.b_or_s = cells_in_row[3].value.strip()
     if (one_entry.b_or_s not in ['买', '卖']): 
-        print "第%d行 无法解析出‘买卖标志’，不是有效的'成交汇总'行 " % ( rowno, )
+        print("第%d行 无法解析出‘买卖标志’，不是有效的'成交汇总'行 " % ( rowno, ))
         return None
 
     #开/平
     one_entry.offset = cells_in_row[8].value.strip()
     if (one_entry.offset not in ['开', '平']): 
-        print "第%d行 无法解析出‘开平标志’ (%s)，不是有效的'成交汇总'行 " % ( rowno, one_entry.offset)
+        print("第%d行 无法解析出‘开平标志’ (%s)，不是有效的'成交汇总'行 " % ( rowno, one_entry.offset))
         return None
 
     #价
@@ -599,7 +599,7 @@ def parse_1_pos_row_until2018( cells_in_row, rowno ):
 
     col_count = len(cells_in_row)
     if ( col_count < 9 ):
-        print "第%d行只有%d列，不是有效的'持仓汇总'行 " % ( rowno, col_count)
+        print("第%d行只有%d列，不是有效的'持仓汇总'行 " % ( rowno, col_count))
         return None
 
     one_entry =  PositionAggreRecord()
@@ -610,7 +610,7 @@ def parse_1_pos_row_until2018( cells_in_row, rowno ):
     #品种
     target = get_target_from_contract( one_entry.contract )
     if (target is None):
-        print "第%d行 无法解析出‘标的品种’，不是有效的'持仓汇总'行 " % ( rowno, )
+        print("第%d行 无法解析出‘标的品种’，不是有效的'持仓汇总'行 " % ( rowno, ))
         return None
 
     one_entry.target = target
@@ -642,7 +642,7 @@ def parse_1_pos_row_2019( cells_in_row, rowno ):
 
     col_count = len(cells_in_row)
     if ( col_count < 10 ):
-        print "第%d行只有%d列，不是有效的'持仓汇总'行 " % ( rowno, col_count)
+        print("第%d行只有%d列，不是有效的'持仓汇总'行 " % ( rowno, col_count))
         return None
 
     one_entry =  PositionAggreRecord()
@@ -653,7 +653,7 @@ def parse_1_pos_row_2019( cells_in_row, rowno ):
     #品种
     target = get_target_from_contract( one_entry.contract )
     if (target is None):
-        print "第%d行 无法解析出‘标的品种’，不是有效的'持仓汇总'行 " % ( rowno, )
+        print("第%d行 无法解析出‘标的品种’，不是有效的'持仓汇总'行 " % ( rowno, ))
         return None
 
     one_entry.target = target

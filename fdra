@@ -1,7 +1,6 @@
-#!/usr/bin/python2 -S
+#!/usr/bin/python3 -S
 # -*- coding: utf-8 -*-
 import sys
-sys.setdefaultencoding("utf-8")
 import site
 import traceback
 
@@ -21,19 +20,19 @@ MY_NAME='fdra'
 # 工具入口
 
 def print_usage( argv0 = MY_NAME ):
-    print "Usage:"
-    print "  %s import    <日报文件>   导入逐日盯市日报文件" % argv0
-    print "  %s importdir <日报目录>   导入指定目录下所有逐日盯市日报文件" % argv0
-    print "  %s stat [lastday|YYYY-MM-DD|YYYY-MM ]  显示按品种的盈亏统计"         % argv0
-    print "  %s stat [daily | daily_top]   显示每日成绩"         % argv0
-    print "  %s total            显示总盈亏"       % argv0
+    print("Usage:")
+    print("  %s import    <日报文件>   导入逐日盯市日报文件" % argv0)
+    print("  %s importdir <日报目录>   导入指定目录下所有逐日盯市日报文件" % argv0)
+    print("  %s stat [lastday|YYYY-MM-DD|YYYY-MM ]  显示按品种的盈亏统计"         % argv0)
+    print("  %s stat [daily | daily_top]   显示每日成绩"         % argv0)
+    print("  %s total            显示总盈亏"       % argv0)
 
 # 处理 'importdir' 子命令
 def handle_importdir( argv, argv0 = MY_NAME ):
     i = len(argv)
     if ( i < 1 ):
-        print "  %s importdir <日报目录>   导入指定目录下所有逐日盯市日报文件" % argv0
-        print "\n 未指定 <日报目录>\n"
+        print("  %s importdir <日报目录>   导入指定目录下所有逐日盯市日报文件" % argv0)
+        print("\n 未指定 <日报目录>\n")
         return 1
 
     myself = sys.argv[0]
@@ -54,13 +53,13 @@ def handle_importdir( argv, argv0 = MY_NAME ):
 def handle_import( argv, argv0 = MY_NAME ):
     i = len(argv)
     if ( i < 1 ):
-        print "  %s import <日报文件>     解析导入日报文件" % argv0
-        print "\n 未指定 <日报文件>\n"
+        print("  %s import <日报文件>     解析导入日报文件" % argv0)
+        print("\n 未指定 <日报文件>\n")
         return 1
 
     try:
 
-        print "processing %s" % (argv[0], )
+        print("processing %s" % (argv[0], ))
         s = report_parser.parse_single_file( argv[0]  )
 
         report_parser.save_report_to_db(s)
@@ -83,7 +82,7 @@ def handle_stat(argv, argv0 = MY_NAME ):
     if ( i < 1 ):
         # 无参数
         db_operator.simplest_stat_by_target()
-        print "总计:"
+        print("总计:")
         db_operator.show_total()
 
         return 0
@@ -92,17 +91,17 @@ def handle_stat(argv, argv0 = MY_NAME ):
 
     if ("lastday" == what):
         db_operator.lastday_stat_by_target()
-        print "总计:"
+        print("总计:")
         db_operator.lastday_total()
         return 0
 
     if ("daily" == what):
-        print "交易日统计:"
+        print("交易日统计:")
         db_operator.daily_stat()
         return 0
 
     if ("daily_top" == what):
-        print "交易日排行:"
+        print("交易日排行:")
         db_operator.daily_stat_sorted()
         return 0
     
@@ -113,13 +112,13 @@ def handle_stat(argv, argv0 = MY_NAME ):
         if (i >=2 and reg.match(argv[1])):
             # stat $From  $Until 的形式
             until = argv[1]
-            print "==== %s ~ %s  区间统计=====" % (what, until)
+            print("==== %s ~ %s  区间统计=====" % (what, until))
             db_operator.range_stat_by_target( what, until )
-            print "总计:"
+            print("总计:")
             db_operator.range_total( what, until )
 
         else:
-            print "==== %s  日报=====" % what
+            print("==== %s  日报=====" % what)
             db_operator.day_stat_by_target( what )
             db_operator.day_total( what )
         return 0
@@ -128,7 +127,7 @@ def handle_stat(argv, argv0 = MY_NAME ):
     reg = re.compile('^\d\d\d\d-\d\d$')
     if reg.match(what): 
         db_operator.month_stat_by_target( what )
-        print "总计:"
+        print("总计:")
         db_operator.month_total( what )
         return 0
     
@@ -136,11 +135,11 @@ def handle_stat(argv, argv0 = MY_NAME ):
     reg = re.compile('^\d\d\d\d$')
     if reg.match(what): 
         db_operator.year_stat_by_target( what )
-        print "总计:"
+        print("总计:")
         db_operator.year_total( what )
         return 0
 
-    print "尚未实现 '%s' :(" % ( what, )
+    print("尚未实现 '%s' :(" % ( what, ))
     
     return 0
 
@@ -171,7 +170,7 @@ def main():
         print_usage()
         return 1
     else:
-        print "\n无效的‘子命令’ -- %s\n" % ( sub_command, )
+        print("\n无效的‘子命令’ -- %s\n" % ( sub_command, ))
         print_usage()
         return 1
 
