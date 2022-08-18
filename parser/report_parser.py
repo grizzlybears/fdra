@@ -81,6 +81,17 @@ class TradeAggreRecord:
                 , self.trade_fee 
                 ))
 
+    def __repr__(self):
+        s = "%s %s %s 价=%f  费=%f  ( %s - %d @%s)" % ( 
+                self.contract
+                , self.offset 
+                , self.b_or_s 
+                , self.price
+                , self.trade_fee 
+                , self.trade_seq, self.sub_seq , self.trade_at 
+                )
+        return s
+
     def dump2(self, indent = "  "):
         print("%s %s %s %s 价=%f  费=%f  ( %s - %d @%s)" % ( indent 
                 , self.contract
@@ -338,28 +349,25 @@ class SimpleTwoLegs:
     leg1   = ""
     leg2   = ""
     target = ""
-    
+  
+    def __repr__(self):
+        s = "%s %s - %s" % ( 
+                self.target
+                , self.leg1
+                , self.leg2
+                )
+        return s
+   
+    # to be a 'key' in 'dict', just implement __hash__ and __eq__
     def __hash__(self):
             return hash((self.leg1, self.leg2, self.target))
 
-    def __cmp__(self, other):
-        if self.leg1 < other.leg1 :
-            return -1
-        elif self.leg1 > other.leg1 :
-            return 1 
-        
-        if self.leg2 < other.leg2 :
-            return -1
-        elif self.leg2 > other.leg2 :
-            return 1 
-        
-        if self.target < other.target :
-            return -1
-        elif self.target > other.target :
-            return 1
 
-        return 0
 
+    def __eq__(self, other):
+        return (self.leg1 == other.leg1) and \
+            (self.leg2 == other.leg2) and    \
+            (self.target == other.target )
 
 
 class SimpleTwoLegsTr:
@@ -373,12 +381,16 @@ class SimpleTwoLegsTrArr:
     #def __init__(self, tr_arr):
 
     def add_stl_pair(self, stl, stl_tr):
-        if stl not in self.stl_arr:
+        #print("------------------")
+        #print( stl) 
+        #print( self.stl_arr) 
+
+        if stl not in self.stl_arr.keys():
             self.stl_arr[stl] = []
-        #    print "new comer:  %s - %s of %s" % ( stl.leg1,stl.leg2, stl.target )
+        #    print( "new comer:  %s " %  stl)
         #else:
-        #    print "exists :  %s - %s of %s" % ( stl.leg1,stl.leg2, stl.target )
-            
+        #    print( "exists :  %s" % stl )
+        #    
         self.stl_arr[stl].append(stl_tr )
 
     def dump(self, indent): 
@@ -499,6 +511,8 @@ class TrScannerForSimple2L:
                     he_key.target = target
                     he_key.leg1 = leg1.contract 
                     he_key.leg2 = leg2.contract 
+
+                    #print( "对冲的组合: %s" % he_key )
                     
                     he_value = SimpleTwoLegsTr()
                     he_value.leg1_tr = leg1
