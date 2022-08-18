@@ -1,0 +1,7 @@
+#!/bin/bash
+
+last_file=`find  ..  -maxdepth 1 -name '*.xls' | sort -r | head -n 1`
+
+fdra import $last_file
+fdra stat lastday
+
