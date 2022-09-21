@@ -801,28 +801,30 @@ def parse_single_file(file_path ):
         row_walker = row_walker +1
 
     if not found:
-        raise Exception ("%s 找不到'期货成交汇总'区域" % (file_path, ) )
-    
-    row_walker = 2 + row_walker 
-    col0 = sh.cell_value (colx = TRADE_RECORD_HEADER_COL , rowx =  row_walker)
-    while ( '合计' !=  col0):
-        #print "processing row %d" % ( row_walker, )
-        #one_tr_entry = parse_1_tr_row( sh.row( row_walker), row_walker )
-
-        #if ( one_tr_entry is not None):
-        #    #one_tr_entry.dump()
-        #    result.aggregated_tr_arr.append( one_tr_entry)
-        
-        #
-        #  之后会解析 '成交明细' sheet，这里一概跳过即可
-        #
-        row_walker = row_walker + 1
+        print("%s 找不到'期货成交汇总'区域" % file_path )
+        row_walker =  TRADE_RECORD_HEADER_ROW - 1  #we will '+3' before seek '持仓记录'
+    else:    
+        row_walker = 2 + row_walker 
         col0 = sh.cell_value (colx = TRADE_RECORD_HEADER_COL , rowx =  row_walker)
+        while ( '合计' !=  col0):
+            #print "processing row %d" % ( row_walker, )
+            #one_tr_entry = parse_1_tr_row( sh.row( row_walker), row_walker )
+
+            #if ( one_tr_entry is not None):
+            #    #one_tr_entry.dump()
+            #    result.aggregated_tr_arr.append( one_tr_entry)
+            
+            #
+            #  之后会解析 '成交明细' sheet，这里一概跳过即可
+            #
+            row_walker = row_walker + 1
+            col0 = sh.cell_value (colx = TRADE_RECORD_HEADER_COL , rowx =  row_walker)
 
     #准备处理 持仓记录
     row_walker = row_walker + 3
     header_cv =  sh.cell_value(colx = TRADE_RECORD_HEADER_COL , rowx = row_walker)
     if ('合约' !=  header_cv and  '日期'!= header_cv):
+        print("row_walker: %d, header: %s" % (row_walker, header_cv)  )
         raise Exception ("%s 找不到'期货持仓汇总'区域" % (file_path, ) )
  
     row_walker = row_walker + 1
